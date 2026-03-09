@@ -1,0 +1,31 @@
+# Zależności
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Pliki środowiska (hasła, klucze API)
+.env
+.env.local
+.env.*.local
+client/.env
+server/.env
+
+# Build / cache
+dist/
+build/
+.vite/
+*.local
+
+# Logi i debug
+*.log
+npm-debug.log*
+.cursor/debug-*.log
+
+# System / IDE (opcjonalnie odkomentuj jeśli nie chcesz commitować)
+# .cursor/
+.DS_Store
+Thumbs.db
+
+# Supabase (jeśli generowane lokalnie)
+.supabase/.branches/
+.supabase/.temp/
