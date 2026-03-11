@@ -4,7 +4,7 @@ Stos: **React** (Vite) + **Node.js** (Express) + **Supabase** (PostgreSQL, Auth)
 
 ## Struktura
 
-- `client/` – frontend React (strona główna, wyszukiwarka, dashboard użytkownika i admina)
+- `client/` – frontend React (strona główna, wyszukiwarka, dashboard użytkownika i admina).
 - `server/` – API Node.js (profil z walidacją wieku, endpointy admina, rate limiting)
 - `supabase/schema.sql` – schemat bazy (tabele, RLS, walidacja wieku 18+)
 - `docs/ARCHITEKTURA-MVP.md` – architektura i MVP (widoki, bezpieczeństwo)
@@ -18,7 +18,7 @@ Stos: **React** (Vite) + **Node.js** (Express) + **Supabase** (PostgreSQL, Auth)
 
 ## Uruchomienie
 
-1. **Supabase:** załóż projekt na [supabase.com](https://supabase.com), skopiuj URL i klucze. Wykonaj `supabase/schema.sql` w SQL Editor.
+1. **Supabase:** załóż projekt na [supabase.com](https://supabase.com), skopiuj URL i klucze. Wykonaj `supabase/schema.sql` w SQL Editor. Aby umożliwić wgrywanie zdjęć do ogłoszeń, wykonaj także `supabase/storage-setup.sql` (bucket `listing-photos` i polityki).
 2. **Zmienne środowiskowe:** skopiuj `client/.env.example` → `client/.env` oraz `server/.env.example` → `server/.env` i uzupełnij klucze Supabase.
 3. **Z katalogu głównego (client + server naraz):**
    ```bash

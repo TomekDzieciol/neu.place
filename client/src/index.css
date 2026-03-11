@@ -312,6 +312,11 @@ a.btn--secondary {
 .alert--warning {
   background: linear-gradient(135deg, #FFF3CD, #FFE69C);
   border: 2px solid var(--color-amber);
+}
+
+.alert--success {
+  background: linear-gradient(135deg, #d4edda, #c3e6cb);
+  border: 2px solid #28a745;
   color: #856404;
 }
 

@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { ListingFilters } from '../components/ListingFilters'
 import { useListingsPreview } from '../hooks/useListingsPreview'
@@ -7,9 +7,16 @@ import { supabase } from '../lib/supabase'
 export function HomePage() {
   const { user } = useAuth()
   const { listings, loading } = useListingsPreview(12)
+  const [searchParams] = useSearchParams()
+  const showSuccess = searchParams.get('sprzedaj') === 'ok'
 
   return (
     <div className="layout">
+      {showSuccess && (
+        <div className="alert alert--success" role="status">
+          Ogłoszenie dodane. Pojawiło się w ostatnich ofertach poniżej.
+        </div>
+      )}
       {!supabase && (
         <div className="alert alert--warning">
           Brak konfiguracji Supabase. Skopiuj <code>client/.env.example</code> do <code>client/.env</code> i uzupełnij VITE_SUPABASE_URL oraz VITE_SUPABASE_ANON_KEY.
@@ -19,7 +26,10 @@ export function HomePage() {
         <h1>Portal ogłoszeń motoryzacyjnych</h1>
         <nav>
           {user ? (
-            <Link to="/dashboard">Moje konto</Link>
+            <>
+              <Link to="/sprzedaj">Sprzedaj</Link>
+              <Link to="/dashboard">Moje konto</Link>
+            </>
           ) : (
             <>
               <Link to="/auth">Zaloguj</Link>
@@ -32,7 +42,11 @@ export function HomePage() {
       <section className="hero">
         <h2>Znajdź swój wymarzony pojazd</h2>
         <p>Bezpieczne ogłoszenia, sprawdzeni sprzedawcy, zaawansowane filtry.</p>
-        {!user && (
+        {user ? (
+          <Link to="/sprzedaj" className="btn btn--secondary">
+            Wystaw ogłoszenie
+          </Link>
+        ) : (
           <Link to="/auth?rejestracja=1" className="btn btn--secondary">
             Zarejestruj się i dodawaj ogłoszenia
           </Link>

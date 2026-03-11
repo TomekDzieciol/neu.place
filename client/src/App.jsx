@@ -4,6 +4,7 @@ import { ListingsPage } from './pages/ListingsPage'
 import { AuthPage } from './pages/AuthPage'
 import { DashboardUser } from './pages/DashboardUser'
 import { DashboardAdmin } from './pages/DashboardAdmin'
+import { SellListingPage } from './pages/SellListingPage'
 import { useAuth } from './hooks/useAuth'
 
 function ProtectedRoute({ children, requireAdmin }) {
@@ -21,6 +22,7 @@ export default function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/ogloszenia" element={<ListingsPage />} />
+        <Route path="/sprzedaj" element={<ProtectedRoute><SellListingPage /></ProtectedRoute>} />
         <Route path="/dashboard" element={<ProtectedRoute><DashboardUser /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute requireAdmin><DashboardAdmin /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
