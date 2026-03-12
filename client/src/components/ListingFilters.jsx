@@ -1,18 +1,36 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
+import { LISTING_CATEGORIES } from '../constants/categories'
 
 export function ListingFilters({ redirectTo = '/ogloszenia' }) {
   const navigate = useNavigate()
-  const [region, setRegion] = useState('')
-  const [brand, setBrand] = useState('')
-  const [priceMin, setPriceMin] = useState('')
-  const [priceMax, setPriceMax] = useState('')
-  const [yearMin, setYearMin] = useState('')
-  const [yearMax, setYearMax] = useState('')
+  const [searchParams] = useSearchParams()
+  const [category, setCategory] = useState(searchParams.get('category') || '')
+  const [region, setRegion] = useState(searchParams.get('region') || '')
+  const [brand, setBrand] = useState(searchParams.get('brand') || '')
+  const [priceMin, setPriceMin] = useState(searchParams.get('priceMin') || '')
+  const [priceMax, setPriceMax] = useState(searchParams.get('priceMax') || '')
+  const [yearMin, setYearMin] = useState(searchParams.get('yearMin') || '')
+  const [yearMax, setYearMax] = useState(searchParams.get('yearMax') || '')
+  const [brands, setBrands] = useState([])
+
+  useEffect(() => {
+    if (!supabase || !category) {
+      setBrands([])
+      return
+    }
+    let cancelled = false
+    supabase.from('car_brands').select('id, name').eq('category', category).order('name').then(({ data }) => {
+      if (!cancelled) setBrands(data ?? [])
+    })
+    return () => { cancelled = true }
+  }, [category])
 
   function handleSubmit(e) {
     e.preventDefault()
     const params = new URLSearchParams()
+    if (category) params.set('category', category)
     if (region) params.set('region', region)
     if (brand) params.set('brand', brand)
     if (priceMin) params.set('priceMin', priceMin)
@@ -25,12 +43,28 @@ export function ListingFilters({ redirectTo = '/ogloszenia' }) {
   return (
     <form onSubmit={handleSubmit} className="search-form">
       <label>
+        Kategoria
+        <select value={category} onChange={(e) => { setCategory(e.target.value); setBrand('') }}>
+          <option value="">Wszystkie</option>
+          {LISTING_CATEGORIES.map((c) => (
+            <option key={c.value} value={c.value}>
+              {c.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label>
         Lokalizacja (region)
         <input type="text" value={region} onChange={(e) => setRegion(e.target.value)} placeholder="np. mazowieckie" />
       </label>
       <label>
         Marka
-        <input type="text" value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="np. BMW" />
+        <select value={brand} onChange={(e) => setBrand(e.target.value)} disabled={!category}>
+          <option value="">{category ? 'Wszystkie' : 'Wybierz najpierw kategorię'}</option>
+          {brands.map((b) => (
+            <option key={b.id} value={b.id}>{b.name}</option>
+          ))}
+        </select>
       </label>
       <label>
         Cena od

@@ -22,36 +22,17 @@ export function AuthPage() {
   const [message, setMessage] = useState({ type: '', text: '' })
   const [loading, setLoading] = useState(false)
 
-  // #region agent log
-  useEffect(() => {
-    const href = window.location.href
-    const hash = window.location.hash || ''
-    const search = window.location.search || ''
-    const hasRecoveryInHash = hash.includes('type=recovery')
-    const hasRecoveryInSearch = search.includes('type=recovery')
-    fetch('http://127.0.0.1:7273/ingest/65417a7f-0a10-4c8c-9baa-f3ced7ad1ff3',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'a5fe17'},body:JSON.stringify({sessionId:'a5fe17',hypothesisId:'H1_H4',location:'AuthPage.jsx:mount',message:'AuthPage URL on mount',data:{href: href.length > 120 ? href.slice(0,120)+'...' : href, hashLength: hash.length, hashPreview: hash.slice(0,80), search, hasRecoveryInHash, hasRecoveryInSearch},timestamp:Date.now()})}).catch(()=>{})
-  }, [])
-  // #endregion
-
   // Tryb "recovery" gdy użytkownik wrócił z linku w mailu (hash z type=recovery).
   // Nie wywołujemy setSearchParams – hash musi zostać w URL, żeby Supabase mógł w initialize() odczytać token i zapisać sesję; inaczej updateUser() zwraca "Auth session missing!".
   useEffect(() => {
     const hash = window.location.hash || ''
     const hasRecovery = hash.includes('type=recovery')
-    // #region agent log
-    fetch('http://127.0.0.1:7273/ingest/65417a7f-0a10-4c8c-9baa-f3ced7ad1ff3',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'a5fe17'},body:JSON.stringify({sessionId:'a5fe17',hypothesisId:'H1_H5',location:'AuthPage.jsx:effect1',message:'Recovery effect',data:{hashLength: hash.length, hasRecovery, willSetRecovery: hasRecovery},timestamp:Date.now()})}).catch(()=>{})
-    // #endregion
     if (hasRecovery) {
       setView(VIEW.RECOVERY)
     }
   }, [])
 
   useEffect(() => {
-    const branch = isRegister ? 'REGISTER' : isForgot ? 'FORGOT' : (view !== VIEW.RECOVERY ? 'LOGIN' : 'RECOVERY_KEEP')
-    const willSetLogin = isRegister ? false : isForgot ? false : view !== VIEW.RECOVERY
-    // #region agent log
-    fetch('http://127.0.0.1:7273/ingest/65417a7f-0a10-4c8c-9baa-f3ced7ad1ff3',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'a5fe17'},body:JSON.stringify({sessionId:'a5fe17',hypothesisId:'H2_H3',location:'AuthPage.jsx:effect2',message:'View sync effect',data:{isRegister,isForgot,view,branch,willSetLogin},timestamp:Date.now()})}).catch(()=>{})
-    // #endregion
     if (isRegister) setView(VIEW.REGISTER)
     else if (isForgot) setView(VIEW.FORGOT)
     else if (view !== VIEW.RECOVERY) setView(VIEW.LOGIN)

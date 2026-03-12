@@ -5,6 +5,10 @@ import { AuthPage } from './pages/AuthPage'
 import { DashboardUser } from './pages/DashboardUser'
 import { DashboardAdmin } from './pages/DashboardAdmin'
 import { SellListingPage } from './pages/SellListingPage'
+import { UserList } from './components/UserList'
+import { AdminListingsList } from './components/AdminListingsList'
+import { BrandsManager } from './components/BrandsManager'
+import { ModelsManager } from './components/ModelsManager'
 import { useAuth } from './hooks/useAuth'
 
 function ProtectedRoute({ children, requireAdmin }) {
@@ -24,7 +28,13 @@ export default function App() {
         <Route path="/ogloszenia" element={<ListingsPage />} />
         <Route path="/sprzedaj" element={<ProtectedRoute><SellListingPage /></ProtectedRoute>} />
         <Route path="/dashboard" element={<ProtectedRoute><DashboardUser /></ProtectedRoute>} />
-        <Route path="/admin" element={<ProtectedRoute requireAdmin><DashboardAdmin /></ProtectedRoute>} />
+        <Route path="/admin" element={<ProtectedRoute requireAdmin><DashboardAdmin /></ProtectedRoute>}>
+          <Route index element={<Navigate to="uzytkownicy" replace />} />
+          <Route path="uzytkownicy" element={<UserList />} />
+          <Route path="ogloszenia" element={<AdminListingsList />} />
+          <Route path="marki" element={<BrandsManager />} />
+          <Route path="modele" element={<ModelsManager />} />
+        </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

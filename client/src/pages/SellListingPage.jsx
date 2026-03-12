@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useListingDictionaries } from '../hooks/useListingDictionaries'
 import { supabase } from '../lib/supabase'
+import { LISTING_CATEGORIES } from '../constants/categories'
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5 MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
@@ -10,6 +11,7 @@ const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 export function SellListingPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const [category, setCategory] = useState('')
   const [brandId, setBrandId] = useState('')
   const [modelId, setModelId] = useState('')
   const [title, setTitle] = useState('')
@@ -23,11 +25,15 @@ export function SellListingPage() {
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-  const { regions, brands, models, loading: dictLoading } = useListingDictionaries(brandId)
+  const { regions, brands, models, loading: dictLoading } = useListingDictionaries(brandId, category || undefined)
 
   useEffect(() => {
     setModelId('')
   }, [brandId])
+  useEffect(() => {
+    setBrandId('')
+    setModelId('')
+  }, [category])
 
   function handleFileChange(e) {
     const chosen = Array.from(e.target.files || [])
@@ -50,6 +56,10 @@ export function SellListingPage() {
     e.preventDefault()
     setError('')
     const currentYear = new Date().getFullYear()
+    if (!category) {
+      setError('Wybierz kategorię ogłoszenia.')
+      return
+    }
     if (!title?.trim()) {
       setError('Podaj tytuł ogłoszenia.')
       return
@@ -87,6 +97,7 @@ export function SellListingPage() {
         .from('listings')
         .insert({
           user_id: user.id,
+          category,
           brand_id: Number(brandId),
           model_id: Number(modelId),
           title: title.trim(),
@@ -172,6 +183,22 @@ export function SellListingPage() {
       <section className="form-block section">
         <form onSubmit={handleSubmit} className="search-form">
           {error && <p className="msg--error">{error}</p>}
+
+          <label>
+            Kategoria *
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              required
+            >
+              <option value="">Wybierz kategorię</option>
+              {LISTING_CATEGORIES.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </label>
 
           <label>
             Marka *

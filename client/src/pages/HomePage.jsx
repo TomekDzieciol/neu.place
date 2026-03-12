@@ -3,6 +3,7 @@ import { useAuth } from '../hooks/useAuth'
 import { ListingFilters } from '../components/ListingFilters'
 import { useListingsPreview } from '../hooks/useListingsPreview'
 import { supabase } from '../lib/supabase'
+import { LISTING_CATEGORIES } from '../constants/categories'
 
 export function HomePage() {
   const { user } = useAuth()
@@ -69,8 +70,15 @@ export function HomePage() {
                 <div className="card__thumb" />
                 <div className="card__body">
                   <h4 className="card__title">{l.title}</h4>
-                  <p className="card__meta">{l.price} PLN · {l.year}</p>
+                  <p className="card__meta">
+                    {l.price} PLN · {l.year}
+                  </p>
                   <p className="card__location">{l.region_name || l.city || '—'}</p>
+                  {l.category && (
+                    <p className="card__badge">
+                      {LISTING_CATEGORIES.find((c) => c.value === l.category)?.label || 'Inna kategoria'}
+                    </p>
+                  )}
                 </div>
               </Link>
             ))}

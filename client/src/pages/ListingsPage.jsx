@@ -1,6 +1,7 @@
 import { Link, useSearchParams } from 'react-router-dom'
 import { ListingFilters } from '../components/ListingFilters'
 import { useListingsSearch } from '../hooks/useListingsSearch'
+import { LISTING_CATEGORIES } from '../constants/categories'
 
 export function ListingsPage() {
   const [searchParams] = useSearchParams()
@@ -27,8 +28,15 @@ export function ListingsPage() {
               <div className="card__thumb" />
               <div className="card__body">
                 <h4 className="card__title">{l.title}</h4>
-                <p className="card__meta">{l.price} PLN · {l.year}</p>
+                <p className="card__meta">
+                  {l.price} PLN · {l.year}
+                </p>
                 <p className="card__location">{l.region_name || l.city || '—'}</p>
+                {l.category && (
+                  <p className="card__badge">
+                    {LISTING_CATEGORIES.find((c) => c.value === l.category)?.label || 'Inna kategoria'}
+                  </p>
+                )}
               </div>
             </Link>
           ))}

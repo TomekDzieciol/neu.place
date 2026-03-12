@@ -78,4 +78,15 @@ app.patch('/api/admin/users/:id/block', requireAuth, requireAdmin, async (req, r
   res.json(data)
 })
 
+app.delete('/api/admin/users/:id', requireAuth, requireAdmin, async (req, res) => {
+  const { id } = req.params
+  if (id === req.user.id) return res.status(400).json({ error: 'Nie możesz usunąć własnego konta.' })
+  const { error } = await supabase.auth.admin.deleteUser(id)
+  if (error) {
+    if (error.message?.includes('User not found') || error.status === 404) return res.status(404).json({ error: 'Użytkownik nie istnieje.' })
+    return res.status(400).json({ error: error.message || 'Nie udało się usunąć konta.' })
+  }
+  res.status(204).send()
+})
+
 app.listen(PORT, () => console.log(`Server: http://localhost:${PORT}`))

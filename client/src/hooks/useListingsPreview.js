@@ -16,7 +16,7 @@ export function useListingsPreview(limit = 12) {
         const { data, error } = await supabase
           .from('listings')
           .select(`
-            id, title, price, year, city,
+            id, title, price, year, city, category,
             regions ( name )
           `)
           .eq('status', 'active')

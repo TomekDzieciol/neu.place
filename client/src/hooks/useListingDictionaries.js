@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 
-export function useListingDictionaries(brandId) {
+export function useListingDictionaries(brandId, category) {
   const [regions, setRegions] = useState([])
   const [brands, setBrands] = useState([])
   const [models, setModels] = useState([])
@@ -15,10 +15,11 @@ export function useListingDictionaries(brandId) {
     let cancelled = false
     async function fetchRegionsAndBrands() {
       try {
-        const [rRes, bRes] = await Promise.all([
-          supabase.from('regions').select('id, name').order('name'),
-          supabase.from('car_brands').select('id, name').order('name'),
-        ])
+        const regionsQuery = supabase.from('regions').select('id, name').order('name')
+        const brandsQuery = category
+          ? supabase.from('car_brands').select('id, name').eq('category', category).order('name')
+          : supabase.from('car_brands').select('id, name').order('name')
+        const [rRes, bRes] = await Promise.all([regionsQuery, brandsQuery])
         if (!cancelled) {
           setRegions(rRes.data ?? [])
           setBrands(bRes.data ?? [])
@@ -34,7 +35,7 @@ export function useListingDictionaries(brandId) {
     }
     fetchRegionsAndBrands()
     return () => { cancelled = true }
-  }, [])
+  }, [category])
 
   useEffect(() => {
     if (!supabase || !brandId) {

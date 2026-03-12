@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
+import { useAuth } from '../hooks/useAuth'
+
+const API_BASE = import.meta.env.VITE_API_URL || ''
 
 export function UserList() {
+  const { user } = useAuth()
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -35,6 +39,30 @@ export function UserList() {
     else loadUsers()
   }
 
+  async function deleteUser(profile) {
+    if (profile.id === user?.id) {
+      setError('Nie możesz usunąć własnego konta.')
+      return
+    }
+    if (!window.confirm(`Czy na pewno chcesz trwale usunąć konto użytkownika ${profile.email || profile.id}? Wszystkie powiązane dane (ogłoszenia, ulubione) zostaną usunięte.`)) return
+    setError('')
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.access_token) {
+      setError('Brak sesji. Zaloguj się ponownie.')
+      return
+    }
+    const res = await fetch(`${API_BASE}/api/admin/users/${profile.id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    })
+    if (res.status === 204) {
+      loadUsers()
+      return
+    }
+    const body = await res.json().catch(() => ({}))
+    setError(body.error || `Błąd ${res.status}. Nie udało się usunąć konta.`)
+  }
+
   if (loading) return <p className="loading">Ładowanie użytkowników…</p>
   if (error) return <p className="msg--error" style={{ marginBottom: 16 }}>{error}</p>
 
@@ -61,6 +89,9 @@ export function UserList() {
               <td>{u.created_at ? new Date(u.created_at).toLocaleDateString('pl') : '—'}</td>
               <td>
                 <button type="button" className="btn-sm" onClick={() => toggleBlock(u)}>{u.is_blocked ? 'Odblokuj' : 'Zablokuj'}</button>
+                {u.id !== user?.id && (
+                  <button type="button" className="btn-sm btn--danger" onClick={() => deleteUser(u)} style={{ marginLeft: 8 }}>Usuń konto</button>
+                )}
               </td>
             </tr>
           ))}

@@ -16,7 +16,7 @@ export function useListingsSearch(filters = {}) {
         let q = supabase
           .from('listings')
           .select(`
-            id, title, price, year, city,
+            id, title, price, year, city, category,
             regions ( name )
           `)
           .eq('status', 'active')
@@ -28,6 +28,7 @@ export function useListingsSearch(filters = {}) {
         if (filters.priceMax) q = q.lte('price', Number(filters.priceMax))
         if (filters.yearMin) q = q.gte('year', Number(filters.yearMin))
         if (filters.yearMax) q = q.lte('year', Number(filters.yearMax))
+        if (filters.category) q = q.eq('category', filters.category)
 
         const { data, error } = await q.limit(100)
         if (!cancelled) {

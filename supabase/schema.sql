@@ -16,9 +16,21 @@ CREATE TABLE IF NOT EXISTS public.regions (
 );
 
 CREATE TABLE IF NOT EXISTS public.car_brands (
-  id   SERIAL PRIMARY KEY,
-  name TEXT NOT NULL UNIQUE
+  id       SERIAL PRIMARY KEY,
+  name     TEXT NOT NULL,
+  category TEXT NOT NULL DEFAULT 'cars' CHECK (category IN (
+    'cars', 'construction', 'motorcycles_scooters', 'trailers', 'vans', 'trucks', 'other'
+  )),
+  UNIQUE(category, name)
 );
+-- Dla istniejącej bazy bez kolumny category: odkomentuj i uruchom poniższą migrację w SQL Editor.
+-- ALTER TABLE public.car_brands ADD COLUMN IF NOT EXISTS category TEXT;
+-- UPDATE public.car_brands SET category = 'cars' WHERE category IS NULL;
+-- ALTER TABLE public.car_brands ALTER COLUMN category SET NOT NULL;
+-- ALTER TABLE public.car_brands ADD CONSTRAINT car_brands_category_check CHECK (category IN (
+--   'cars', 'construction', 'motorcycles_scooters', 'trailers', 'vans', 'trucks', 'other'));
+-- ALTER TABLE public.car_brands DROP CONSTRAINT IF EXISTS car_brands_name_key;
+-- CREATE UNIQUE INDEX IF NOT EXISTS car_brands_category_name_key ON public.car_brands(category, name);
 
 CREATE TABLE IF NOT EXISTS public.car_models (
   id         SERIAL PRIMARY KEY,
@@ -109,6 +121,21 @@ CREATE INDEX idx_listings_price ON public.listings(price);
 CREATE INDEX idx_listings_region ON public.listings(region_id);
 CREATE INDEX idx_listings_brand_model ON public.listings(brand_id, model_id);
 
+-- Kategorie ogłoszeń (samochody osobowe, maszyny budowlane itd.)
+ALTER TABLE public.listings
+  ADD COLUMN IF NOT EXISTS category TEXT
+    CHECK (category IN (
+      'cars',
+      'construction',
+      'motorcycles_scooters',
+      'trailers',
+      'vans',
+      'trucks',
+      'other'
+    ));
+
+CREATE INDEX IF NOT EXISTS idx_listings_category ON public.listings(category);
+
 -- ============================================================
 -- ZDJĘCIA OGŁOSZEŃ (1:N do listing)
 -- ============================================================
@@ -144,14 +171,18 @@ ALTER TABLE public.listings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.listing_photos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.favorites ENABLE ROW LEVEL SECURITY;
 
+-- Helper: czy zalogowany użytkownik jest adminem (SECURITY DEFINER = bez RLS, unika rekurencji)
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS boolean LANGUAGE sql SECURITY DEFINER STABLE SET search_path = public AS $$
+  SELECT EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'superadmin') AND is_blocked = FALSE);
+$$;
+
 -- Profiles: użytkownik widzi/edytuje tylko swój profil; admin widzi wszystkich
 CREATE POLICY "profiles_select_own" ON public.profiles
   FOR SELECT USING (auth.uid() = id);
 
 CREATE POLICY "profiles_select_admin" ON public.profiles
-  FOR SELECT USING (
-    EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role IN ('admin', 'superadmin') AND p.is_blocked = FALSE)
-  );
+  FOR SELECT USING (public.is_admin());
 
 CREATE POLICY "profiles_update_own" ON public.profiles
   FOR UPDATE USING (auth.uid() = id)
@@ -162,9 +193,7 @@ CREATE POLICY "profiles_insert_own" ON public.profiles
 
 -- Tylko admin może aktualizować innych (role, is_blocked)
 CREATE POLICY "profiles_admin_update" ON public.profiles
-  FOR UPDATE USING (
-    EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role IN ('admin', 'superadmin') AND p.is_blocked = FALSE)
-  );
+  FOR UPDATE USING (public.is_admin());
 
 -- Listings: wszyscy widzą aktywne; właściciel widzi swoje wszystkie; admin widzi wszystkie
 CREATE POLICY "listings_select_public" ON public.listings
@@ -174,9 +203,7 @@ CREATE POLICY "listings_select_own" ON public.listings
   FOR SELECT USING (auth.uid() = user_id);
 
 CREATE POLICY "listings_select_admin" ON public.listings
-  FOR SELECT USING (
-    EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role IN ('admin', 'superadmin') AND p.is_blocked = FALSE)
-  );
+  FOR SELECT USING (public.is_admin());
 
 CREATE POLICY "listings_insert_own" ON public.listings
   FOR INSERT WITH CHECK (auth.uid() = user_id);
@@ -192,7 +219,7 @@ CREATE POLICY "listings_delete_own" ON public.listings
 CREATE POLICY "listing_photos_select" ON public.listing_photos
   FOR SELECT USING (
     EXISTS (SELECT 1 FROM public.listings l WHERE l.id = listing_id AND (l.status = 'active' OR l.user_id = auth.uid()))
-    OR EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role IN ('admin', 'superadmin'))
+    OR public.is_admin()
   );
 CREATE POLICY "listing_photos_insert" ON public.listing_photos
   FOR INSERT WITH CHECK (
@@ -222,6 +249,12 @@ ALTER TABLE public.car_models ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "regions_select_all" ON public.regions FOR SELECT USING (true);
 CREATE POLICY "car_brands_select_all" ON public.car_brands FOR SELECT USING (true);
+CREATE POLICY "car_brands_admin_insert" ON public.car_brands
+  FOR INSERT WITH CHECK (public.is_admin());
+CREATE POLICY "car_brands_admin_update" ON public.car_brands
+  FOR UPDATE USING (public.is_admin());
+CREATE POLICY "car_brands_admin_delete" ON public.car_brands
+  FOR DELETE USING (public.is_admin());
 CREATE POLICY "car_models_select_all" ON public.car_models FOR SELECT USING (true);
 
 -- ============================================================
