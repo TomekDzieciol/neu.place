@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { HomePage } from './pages/HomePage'
 import { ListingsPage } from './pages/ListingsPage'
+import { ListingDetailPage } from './pages/ListingDetailPage'
 import { AuthPage } from './pages/AuthPage'
 import { DashboardUser } from './pages/DashboardUser'
 import { DashboardAdmin } from './pages/DashboardAdmin'
@@ -26,6 +27,7 @@ export default function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/ogloszenia" element={<ListingsPage />} />
+        <Route path="/ogloszenia/:id" element={<ListingDetailPage />} />
         <Route path="/sprzedaj" element={<ProtectedRoute><SellListingPage /></ProtectedRoute>} />
         <Route path="/dashboard" element={<ProtectedRoute><DashboardUser /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute requireAdmin><DashboardAdmin /></ProtectedRoute>}>

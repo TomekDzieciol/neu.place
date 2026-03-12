@@ -17,14 +17,30 @@ export function useListingsPreview(limit = 12) {
           .from('listings')
           .select(`
             id, title, price, year, city, category,
-            regions ( name )
+            regions ( name ),
+            counties ( name ),
+            listing_photos ( url, sort_order )
           `)
           .eq('status', 'active')
           .order('created_at', { ascending: false })
           .limit(limit)
         if (!cancelled) {
-          if (error) setListings([])
-          else setListings((data || []).map((r) => ({ ...r, region_name: r.regions?.name })))
+          if (error) {
+            setListings([])
+          } else {
+            const mapped = (data || []).map((r) => {
+              const photos = Array.isArray(r.listing_photos)
+                ? [...r.listing_photos].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+                : []
+              return {
+                ...r,
+                region_name: r.regions?.name,
+                county_name: r.counties?.name,
+                photo_url: photos[0]?.url || null,
+              }
+            })
+            setListings(mapped)
+          }
         }
       } catch (_) {
         if (!cancelled) setListings([])

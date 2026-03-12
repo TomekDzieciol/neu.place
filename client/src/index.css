@@ -188,6 +188,18 @@ a.btn--secondary {
   height: 180px;
   background: linear-gradient(135deg, var(--color-cyan) 0%, var(--color-magenta) 100%);
   opacity: 0.9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card__thumb-image {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
 }
 
 .card--listing .card__body {
@@ -464,6 +476,39 @@ a.btn--secondary {
 .form-block button[type="submit"]:hover {
   opacity: 0.95;
   transform: translateY(-1px);
+}
+
+/* Toggle buttons (stan techniczny itp.) */
+.toggle-group {
+  display: inline-flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.toggle-btn {
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #f4f5fb;
+  color: var(--color-text-muted);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-width: 140px;
+  text-align: center;
+  transition: background 0.15s, color 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+.toggle-btn:hover {
+  background: #e6e8f5;
+}
+
+.toggle-btn--active {
+  background: #ffffff;
+  border-color: var(--color-cyan);
+  color: var(--color-text);
+  box-shadow: 0 0 0 2px rgba(0, 217, 255, 0.25);
 }
 
 /* Table (admin) */

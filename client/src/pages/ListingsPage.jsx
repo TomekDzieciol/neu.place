@@ -25,13 +25,21 @@ export function ListingsPage() {
         <div className="grid-listings">
           {listings.map((l) => (
             <Link key={l.id} to={`/ogloszenia/${l.id}`} className="card card--listing card--clickable">
-              <div className="card__thumb" />
+              <div className="card__thumb">
+                {l.photo_url && (
+                  <img
+                    src={l.photo_url}
+                    alt={l.title}
+                    className="card__thumb-image"
+                  />
+                )}
+              </div>
               <div className="card__body">
                 <h4 className="card__title">{l.title}</h4>
                 <p className="card__meta">
                   {l.price} PLN · {l.year}
                 </p>
-                <p className="card__location">{l.region_name || l.city || '—'}</p>
+                <p className="card__location">{[l.region_name, l.county_name, l.city].filter(Boolean).join(', ') || '—'}</p>
                 {l.category && (
                   <p className="card__badge">
                     {LISTING_CATEGORIES.find((c) => c.value === l.category)?.label || 'Inna kategoria'}

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useListingDictionaries } from '../hooks/useListingDictionaries'
+import { useCounties } from '../hooks/useCounties'
 import { supabase } from '../lib/supabase'
 import { LISTING_CATEGORIES } from '../constants/categories'
 
@@ -9,23 +10,30 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5 MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 
 export function SellListingPage() {
-  const { user } = useAuth()
   const navigate = useNavigate()
   const [category, setCategory] = useState('')
   const [brandId, setBrandId] = useState('')
   const [modelId, setModelId] = useState('')
+  const [fuelId, setFuelId] = useState('')
+  const [bodyTypeId, setBodyTypeId] = useState('')
+  const [colorId, setColorId] = useState('')
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [price, setPrice] = useState('')
   const [year, setYear] = useState('')
   const [mileageKm, setMileageKm] = useState('')
+  const [engineCapacityCc, setEngineCapacityCc] = useState('')
   const [regionId, setRegionId] = useState('')
+  const [countyId, setCountyId] = useState('')
   const [city, setCity] = useState('')
+  const [technicalCondition, setTechnicalCondition] = useState('Nieuszkodzony')
   const [files, setFiles] = useState([])
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-  const { regions, brands, models, loading: dictLoading } = useListingDictionaries(brandId, category || undefined)
+  const { user, profile } = useAuth()
+  const { regions, brands, models, fuels, bodyTypes, colors, loading: dictLoading } = useListingDictionaries(brandId, category || undefined)
+  const { counties } = useCounties(regionId || null)
 
   useEffect(() => {
     setModelId('')
@@ -34,6 +42,13 @@ export function SellListingPage() {
     setBrandId('')
     setModelId('')
   }, [category])
+  // Prefill lokalizacji z profilu użytkownika (tylko przy pierwszym wejściu)
+  useEffect(() => {
+    if (!profile || regionId !== '' || countyId !== '') return
+    if (profile.region_id) setRegionId(String(profile.region_id))
+    if (profile.county_id) setCountyId(String(profile.county_id))
+    if (profile.city) setCity(profile.city)
+  }, [profile])
 
   function handleFileChange(e) {
     const chosen = Array.from(e.target.files || [])
@@ -68,6 +83,22 @@ export function SellListingPage() {
       setError('Wybierz markę i model.')
       return
     }
+    if (!fuelId) {
+      setError('Wybierz rodzaj paliwa.')
+      return
+    }
+    if (!bodyTypeId) {
+      setError('Wybierz typ nadwozia.')
+      return
+    }
+    if (!colorId) {
+      setError('Wybierz kolor.')
+      return
+    }
+    if (!technicalCondition) {
+      setError('Wybierz stan techniczny.')
+      return
+    }
     const priceNum = Number(price)
     if (Number.isNaN(priceNum) || priceNum < 0) {
       setError('Podaj prawidłową cenę (PLN).')
@@ -86,6 +117,17 @@ export function SellListingPage() {
       setError('Przebieg musi być liczbą nieujemną.')
       return
     }
+    if (
+      engineCapacityCc !== '' &&
+      (Number.isNaN(Number(engineCapacityCc)) || Number(engineCapacityCc) <= 0)
+    ) {
+      setError('Pojemność silnika musi być dodatnią liczbą.')
+      return
+    }
+    if (!regionId || !countyId) {
+      setError('Wybierz województwo i powiat.')
+      return
+    }
     if (!supabase || !user) {
       setError('Brak połączenia lub niezalogowany użytkownik.')
       return
@@ -100,13 +142,19 @@ export function SellListingPage() {
           category,
           brand_id: Number(brandId),
           model_id: Number(modelId),
+          fuel_id: Number(fuelId),
+          body_type_id: Number(bodyTypeId),
+          color_id: Number(colorId),
           title: title.trim(),
           description: description.trim() || null,
           price: priceNum,
           year: yearNum,
           mileage_km: mileageKm === '' ? null : Number(mileageKm),
-          region_id: regionId === '' ? null : Number(regionId),
+          engine_capacity_cc: engineCapacityCc === '' ? null : Number(engineCapacityCc),
+          region_id: Number(regionId),
+          county_id: countyId === '' ? null : Number(countyId),
           city: city.trim() || null,
+          technical_condition: technicalCondition,
           status: 'active',
         })
         .select('id')
@@ -234,6 +282,82 @@ export function SellListingPage() {
           </label>
 
           <label>
+            Paliwo *
+            <select
+              value={fuelId}
+              onChange={(e) => setFuelId(e.target.value)}
+              required
+            >
+              <option value="">Wybierz paliwo</option>
+              {fuels.map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.name}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            Kolor *
+            <select
+              value={colorId}
+              onChange={(e) => setColorId(e.target.value)}
+              required
+            >
+              <option value="">Wybierz kolor</option>
+              {colors.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            Stan techniczny *
+            <div className="toggle-group">
+              <button
+                type="button"
+                className={
+                  technicalCondition === 'Nieuszkodzony'
+                    ? 'toggle-btn toggle-btn--active'
+                    : 'toggle-btn'
+                }
+                onClick={() => setTechnicalCondition('Nieuszkodzony')}
+              >
+                Nieuszkodzony
+              </button>
+              <button
+                type="button"
+                className={
+                  technicalCondition === 'Uszkodzony'
+                    ? 'toggle-btn toggle-btn--active'
+                    : 'toggle-btn'
+                }
+                onClick={() => setTechnicalCondition('Uszkodzony')}
+              >
+                Uszkodzony
+              </button>
+            </div>
+          </label>
+
+          <label>
+            Typ nadwozia *
+            <select
+              value={bodyTypeId}
+              onChange={(e) => setBodyTypeId(e.target.value)}
+              required
+            >
+              <option value="">Wybierz typ nadwozia</option>
+              {bodyTypes.map((bt) => (
+                <option key={bt.id} value={bt.id}>
+                  {bt.name}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label>
             Tytuł ogłoszenia *
             <input
               type="text"
@@ -280,24 +404,37 @@ export function SellListingPage() {
             />
           </label>
 
-          <label>
-            Przebieg (km)
-            <input
-              type="number"
-              min={0}
-              value={mileageKm}
-              onChange={(e) => setMileageKm(e.target.value)}
-              placeholder="opcjonalnie"
-            />
-          </label>
+        <label>
+          Przebieg (km)
+          <input
+            type="number"
+            min={0}
+            value={mileageKm}
+            onChange={(e) => setMileageKm(e.target.value)}
+            placeholder="opcjonalnie"
+          />
+        </label>
+
+        <label>
+          Pojemność silnika (cm³)
+          <input
+            type="number"
+            min={1}
+            step={1}
+            value={engineCapacityCc}
+            onChange={(e) => setEngineCapacityCc(e.target.value)}
+            placeholder="np. 1998"
+          />
+        </label>
 
           <label>
-            Region
+            Województwo *
             <select
               value={regionId}
-              onChange={(e) => setRegionId(e.target.value)}
+              onChange={(e) => { setRegionId(e.target.value); setCountyId(''); }}
+              required
             >
-              <option value="">Wybierz region</option>
+              <option value="">Wybierz województwo</option>
               {regions.map((r) => (
                 <option key={r.id} value={r.id}>
                   {r.name}
@@ -307,12 +444,29 @@ export function SellListingPage() {
           </label>
 
           <label>
-            Miasto
+            Powiat *
+            <select
+              value={countyId}
+              onChange={(e) => setCountyId(e.target.value)}
+              required
+              disabled={!regionId}
+            >
+              <option value="">Wybierz powiat</option>
+              {counties.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            Miasto (opcjonalnie)
             <input
               type="text"
               value={city}
               onChange={(e) => setCity(e.target.value)}
-              placeholder="opcjonalnie"
+              placeholder="np. Warszawa, dzielnica"
             />
           </label>
 
