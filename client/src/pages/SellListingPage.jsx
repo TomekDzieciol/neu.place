@@ -207,12 +207,24 @@ export function SellListingPage() {
     }
   }
 
+  async function handleSignOut() {
+    if (supabase) await supabase.auth.signOut()
+  }
+
   if (dictLoading) {
     return (
       <div className="layout layout--narrow">
         <header className="page-header">
           <h1>Wystaw ogłoszenie</h1>
-          <Link to="/">Strona główna</Link>
+          <nav>
+            <Link to="/">Strona główna</Link>
+            {user && (
+              <>
+                <Link to="/dashboard">Moje konto</Link>
+                <button type="button" className="btn-link" onClick={handleSignOut}>Wyloguj</button>
+              </>
+            )}
+          </nav>
         </header>
         <p className="loading">Ładowanie formularza…</p>
       </div>
@@ -225,6 +237,12 @@ export function SellListingPage() {
         <h1>Wystaw ogłoszenie</h1>
         <nav>
           <Link to="/">Strona główna</Link>
+          {user && (
+            <>
+              <Link to="/dashboard">Moje konto</Link>
+              <button type="button" className="btn-link" onClick={handleSignOut}>Wyloguj</button>
+            </>
+          )}
         </nav>
       </header>
 

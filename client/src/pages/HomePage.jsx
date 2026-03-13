@@ -11,6 +11,10 @@ export function HomePage() {
   const [searchParams] = useSearchParams()
   const showSuccess = searchParams.get('sprzedaj') === 'ok'
 
+  async function handleSignOut() {
+    if (supabase) await supabase.auth.signOut()
+  }
+
   return (
     <div className="layout">
       {showSuccess && (
@@ -30,6 +34,7 @@ export function HomePage() {
             <>
               <Link to="/sprzedaj">Sprzedaj</Link>
               <Link to="/dashboard">Moje konto</Link>
+              <button type="button" className="btn-link" onClick={handleSignOut}>Wyloguj</button>
             </>
           ) : (
             <>
