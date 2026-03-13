@@ -1,21 +1,25 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL || '').trim()
+const supabaseAnonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY || '').trim()
+
+let supabase = null
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.error(
-    '[Supabase] Missing env variables. Check VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in client/.env or Vercel project settings.',
+  // Nie blokujemy całej aplikacji – tylko ostrzegamy w konsoli,
+  // a reszta UI działa dalej (hooki sprawdzają !supabase).
+  console.warn(
+    '[Supabase] Missing env variables – Supabase client will not be initialized. ' +
+      'Check VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in client/.env and your Vercel project settings.',
     { hasUrl: !!supabaseUrl, hasAnonKey: !!supabaseAnonKey }
   )
+} else {
+  try {
+    supabase = createClient(supabaseUrl, supabaseAnonKey)
+  } catch (e) {
+    console.error('[Supabase] Init error while creating client.', e)
+    supabase = null
+  }
 }
 
-let supabase
-try {
-  supabase = createClient(supabaseUrl, supabaseAnonKey)
-} catch (e) {
-  console.error('[Supabase] Init error while creating client.', e)
-  supabase = null
-}
-
-export { supabase }
+export { supabase, supabaseUrl, supabaseAnonKey }
