@@ -44,6 +44,10 @@ export function useListingsSearch(filters = {}) {
         const { data, error } = await q.limit(100)
         if (!cancelled) {
           if (error) {
+            console.error('[useListingsSearch] Supabase query error while searching listings.', {
+              filters,
+              error,
+            })
             setListings([])
           } else {
             const mapped = (data || []).map((r) => {
@@ -60,7 +64,11 @@ export function useListingsSearch(filters = {}) {
             setListings(mapped)
           }
         }
-      } catch (_) {
+      } catch (e) {
+        console.error('[useListingsSearch] Unexpected error while searching listings.', {
+          filters,
+          error: e,
+        })
         if (!cancelled) setListings([])
       } finally {
         if (!cancelled) setLoading(false)

@@ -30,6 +30,10 @@ export function ModelsManager() {
         .order('name')
       if (!cancelled) {
         if (err) {
+          console.error('[ModelsManager] Supabase query error while loading brands.', {
+            selectedCategory,
+            error: err,
+          })
           setError(err.message)
           setBrands([])
           setSelectedBrandId('')
@@ -63,6 +67,10 @@ export function ModelsManager() {
         .order('name')
       if (!cancelled) {
         if (err) {
+          console.error('[ModelsManager] Supabase query error while loading models.', {
+            selectedBrandId,
+            error: err,
+          })
           setError(err.message)
           setModels([])
         } else {
@@ -96,6 +104,11 @@ export function ModelsManager() {
       .from('car_models')
       .insert({ name, brand_id: Number(selectedBrandId) })
     if (err) {
+      console.error('[ModelsManager] Supabase insert error while adding model.', {
+        selectedBrandId,
+        name,
+        error: err,
+      })
       setError(err.message || 'Nie udało się dodać modelu.')
       return
     }
@@ -127,6 +140,10 @@ export function ModelsManager() {
       .eq('id', model.id)
     setDeletingId(null)
     if (err) {
+      console.error('[ModelsManager] Supabase delete error while removing model.', {
+        modelId: model.id,
+        error: err,
+      })
       setError(err.message || 'Nie udało się usunąć modelu.')
       return
     }

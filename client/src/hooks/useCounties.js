@@ -17,13 +17,23 @@ export function useCounties(regionId) {
       .select('id, name')
       .eq('region_id', regionId)
       .order('name')
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('[useCounties] Supabase query error while loading counties.', {
+            regionId,
+            error,
+          })
+        }
         if (!cancelled) {
           setCounties(data ?? [])
           setLoading(false)
         }
       })
-      .catch(() => {
+      .catch((e) => {
+        console.error('[useCounties] Unexpected error while loading counties.', {
+          regionId,
+          error: e,
+        })
         if (!cancelled) {
           setCounties([])
           setLoading(false)

@@ -24,6 +24,9 @@ export function UserList() {
     }
     const { data, error: err } = await supabase.from('profiles').select('id, email, display_name, role, is_blocked, created_at').order('created_at', { ascending: false })
     if (err) {
+      console.error('[UserList] Supabase query error while loading users.', {
+        error: err,
+      })
       setError(err.message)
       setUsers([])
     } else {
@@ -35,8 +38,15 @@ export function UserList() {
   async function toggleBlock(profile) {
     if (!supabase) return
     const { error: err } = await supabase.from('profiles').update({ is_blocked: !profile.is_blocked }).eq('id', profile.id)
-    if (err) setError(err.message)
-    else loadUsers()
+    if (err) {
+      console.error('[UserList] Supabase update error while toggling user block.', {
+        profileId: profile.id,
+        error: err,
+      })
+      setError(err.message)
+    } else {
+      loadUsers()
+    }
   }
 
   async function deleteUser(profile) {

@@ -26,6 +26,10 @@ export function BrandsManager() {
         .order('name')
       if (!cancelled) {
         if (err) {
+          console.error('[BrandsManager] Supabase query error while loading brands.', {
+            selectedCategory,
+            error: err,
+          })
           setError(err.message)
           setBrands([])
         } else {
@@ -53,6 +57,11 @@ export function BrandsManager() {
     if (!supabase) return
     const { error: err } = await supabase.from('car_brands').insert({ name, category: selectedCategory })
     if (err) {
+      console.error('[BrandsManager] Supabase insert error while adding brand.', {
+        selectedCategory,
+        name,
+        error: err,
+      })
       setError(err.message || 'Nie udało się dodać marki.')
       return
     }
@@ -73,6 +82,10 @@ export function BrandsManager() {
     const { error: err } = await supabase.from('car_brands').delete().eq('id', brand.id)
     setDeletingId(null)
     if (err) {
+      console.error('[BrandsManager] Supabase delete error while removing brand.', {
+        brandId: brand.id,
+        error: err,
+      })
       setError(err.message || 'Nie udało się usunąć marki.')
       return
     }

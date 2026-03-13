@@ -45,6 +45,10 @@ export function ProfileForm({ profile, userId }) {
       })
       .eq('id', userId)
     if (err) {
+      console.error('[ProfileForm] Supabase update error while saving profile.', {
+        userId,
+        error: err,
+      })
       setError(err.message)
       return
     }

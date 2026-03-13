@@ -161,6 +161,20 @@ export function SellListingPage() {
         .single()
 
       if (insertErr) {
+        console.error('[SellListingPage] Supabase insert error while creating listing.', {
+          userId: user.id,
+          payload: {
+            category,
+            brandId,
+            modelId,
+            fuelId,
+            bodyTypeId,
+            colorId,
+            regionId,
+            countyId,
+          },
+          error: insertErr,
+        })
         setError(insertErr.message || 'Błąd zapisu ogłoszenia.')
         setSubmitting(false)
         return
@@ -178,6 +192,11 @@ export function SellListingPage() {
           .upload(path, file, { cacheControl: '3600', upsert: false })
 
         if (uploadErr) {
+          console.error('[SellListingPage] Supabase storage upload error while saving listing photo.', {
+            listingId,
+            path,
+            error: uploadErr,
+          })
           setError(`Błąd wgrywania zdjęcia: ${uploadErr.message}`)
           setSubmitting(false)
           return
@@ -194,6 +213,12 @@ export function SellListingPage() {
           sort_order: i,
         })
         if (photoErr) {
+          console.error('[SellListingPage] Supabase insert error while saving listing photo row.', {
+            listingId,
+            url: photoUrl,
+            sortOrder: i,
+            error: photoErr,
+          })
           setError(`Błąd zapisu zdjęcia: ${photoErr.message}`)
           setSubmitting(false)
           return
@@ -202,6 +227,9 @@ export function SellListingPage() {
 
       navigate('/?sprzedaj=ok', { replace: true })
     } catch (err) {
+      console.error('[SellListingPage] Unexpected error while submitting listing form.', {
+        error: err,
+      })
       setError(err.message || 'Wystąpił błąd.')
       setSubmitting(false)
     }

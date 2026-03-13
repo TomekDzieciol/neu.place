@@ -26,6 +26,10 @@ export function useListingsPreview(limit = 12) {
           .limit(limit)
         if (!cancelled) {
           if (error) {
+            console.error('[useListingsPreview] Supabase query error while loading listings preview.', {
+              limit,
+              error,
+            })
             setListings([])
           } else {
             const mapped = (data || []).map((r) => {
@@ -42,7 +46,11 @@ export function useListingsPreview(limit = 12) {
             setListings(mapped)
           }
         }
-      } catch (_) {
+      } catch (e) {
+        console.error('[useListingsPreview] Unexpected error while loading listings preview.', {
+          limit,
+          error: e,
+        })
         if (!cancelled) setListings([])
       } finally {
         if (!cancelled) setLoading(false)

@@ -31,9 +31,20 @@ export function ListingFilters({ redirectTo = '/ogloszenia' }) {
       return
     }
     let cancelled = false
-    supabase.from('car_brands').select('id, name').eq('category', category).order('name').then(({ data }) => {
-      if (!cancelled) setBrands(data ?? [])
-    })
+    supabase
+      .from('car_brands')
+      .select('id, name')
+      .eq('category', category)
+      .order('name')
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('[ListingFilters] Supabase query error while loading brands for filters.', {
+            category,
+            error,
+          })
+        }
+        if (!cancelled) setBrands(data ?? [])
+      })
     return () => { cancelled = true }
   }, [category])
 

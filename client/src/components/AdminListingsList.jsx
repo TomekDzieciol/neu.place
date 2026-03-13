@@ -27,6 +27,9 @@ export function AdminListingsList() {
       .order('created_at', { ascending: false })
       .limit(500)
     if (err) {
+      console.error('[AdminListingsList] Supabase query error while loading listings for admin.', {
+        error: err,
+      })
       setError(err.message)
       setListings([])
       setLoading(false)
@@ -36,11 +39,18 @@ export function AdminListingsList() {
     const userIds = [...new Set(list.map((l) => l.user_id).filter(Boolean))]
     let profilesMap = {}
     if (userIds.length > 0) {
-      const { data: profiles } = await supabase
+      const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, email, display_name')
         .in('id', userIds)
-      profilesMap = (profiles || []).reduce((acc, p) => ({ ...acc, [p.id]: p }), {})
+      if (profilesError) {
+        console.error('[AdminListingsList] Supabase query error while loading listing owners profiles.', {
+          error: profilesError,
+        })
+        profilesMap = {}
+      } else {
+        profilesMap = (profiles || []).reduce((acc, p) => ({ ...acc, [p.id]: p }), {})
+      }
     }
     setListings(list.map((r) => {
       const p = profilesMap[r.user_id]

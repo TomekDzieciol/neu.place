@@ -38,6 +38,11 @@ export function ListingDetailPage() {
         if (cancelled) return
 
         if (qError || !data) {
+          console.error('[ListingDetailPage] Failed to load listing details from Supabase.', {
+            listingId: id,
+            error: qError,
+            hasData: !!data,
+          })
           setError('Nie znaleziono ogłoszenia.')
           setListing(null)
         } else {
@@ -57,6 +62,10 @@ export function ListingDetailPage() {
           setListing(mapped)
         }
       } catch (e) {
+        console.error('[ListingDetailPage] Unexpected error while loading listing details.', {
+          listingId: id,
+          error: e,
+        })
         if (!cancelled) {
           setError('Wystąpił błąd podczas ładowania ogłoszenia.')
         }

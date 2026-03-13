@@ -25,15 +25,35 @@ export function useListingDictionaries(brandId, category) {
         const brandsQuery = category
           ? supabase.from('car_brands').select('id, name').eq('category', category).order('name')
           : supabase.from('car_brands').select('id, name').order('name')
-        const [rRes, fRes, btRes, cRes, bRes] = await Promise.all([regionsQuery, fuelsQuery, bodyTypesQuery, colorsQuery, brandsQuery])
+        const [rRes, fRes, btRes, cRes, bRes] = await Promise.all([
+          regionsQuery,
+          fuelsQuery,
+          bodyTypesQuery,
+          colorsQuery,
+          brandsQuery,
+        ])
         if (!cancelled) {
+          if (rRes.error || fRes.error || btRes.error || cRes.error || bRes.error) {
+            console.error('[useListingDictionaries] Supabase query error while loading dictionaries.', {
+              category,
+              regionsError: rRes.error,
+              fuelsError: fRes.error,
+              bodyTypesError: btRes.error,
+              colorsError: cRes.error,
+              brandsError: bRes.error,
+            })
+          }
           setRegions(rRes.data ?? [])
           setFuels(fRes.data ?? [])
           setBodyTypes(btRes.data ?? [])
           setColors(cRes.data ?? [])
           setBrands(bRes.data ?? [])
         }
-      } catch (_) {
+      } catch (e) {
+        console.error('[useListingDictionaries] Unexpected error while loading dictionaries.', {
+          category,
+          error: e,
+        })
         if (!cancelled) {
           setRegions([])
           setFuels([])
@@ -57,13 +77,23 @@ export function useListingDictionaries(brandId, category) {
     let cancelled = false
     async function fetchModels() {
       try {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from('car_models')
           .select('id, name')
           .eq('brand_id', brandId)
           .order('name')
+        if (error) {
+          console.error('[useListingDictionaries] Supabase query error while loading models for brand.', {
+            brandId,
+            error,
+          })
+        }
         if (!cancelled) setModels(data ?? [])
-      } catch (_) {
+      } catch (e) {
+        console.error('[useListingDictionaries] Unexpected error while loading models for brand.', {
+          brandId,
+          error: e,
+        })
         if (!cancelled) setModels([])
       }
     }

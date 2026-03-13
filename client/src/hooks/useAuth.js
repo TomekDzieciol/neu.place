@@ -12,7 +12,10 @@ export function useAuth() {
       return
     }
     supabase.auth.getSession()
-      .then(({ data: { session } }) => {
+      .then(({ data: { session }, error }) => {
+        if (error) {
+          console.error('[useAuth] Supabase auth getSession error.', { error })
+        }
         setUser(session?.user ?? null)
         // #region agent log
         const uid = session?.user?.id; if (uid) fetch('http://127.0.0.1:7273/ingest/65417a7f-0a10-4c8c-9baa-f3ced7ad1ff3',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'69178f'},body:JSON.stringify({sessionId:'69178f',location:'useAuth.js:getSession',message:'session user id',data:{userId:uid,email:session?.user?.email},timestamp:Date.now(),hypothesisId:'H2'})}).catch(()=>{});
@@ -21,7 +24,8 @@ export function useAuth() {
         else setProfile(null)
         setLoading(false)
       })
-      .catch(() => {
+      .catch((e) => {
+        console.error('[useAuth] Unexpected error during auth getSession.', { error: e })
         setUser(null)
         setProfile(null)
         setLoading(false)
@@ -43,11 +47,29 @@ async function ensureProfileThenFetch(user) {
   // #region agent log
   fetch('http://127.0.0.1:7273/ingest/65417a7f-0a10-4c8c-9baa-f3ced7ad1ff3',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'69178f'},body:JSON.stringify({sessionId:'69178f',location:'useAuth.js:ensureProfileThenFetch',message:'profile fetch result',data:{userId:user.id,role:existing?.role,hasData:!!existing,error:fetchError?.message},timestamp:Date.now(),hypothesisId:'H1,H2,H3,H5'})}).catch(()=>{});
   // #endregion
-  if (fetchError) throw fetchError
+  if (fetchError) {
+    console.error('[useAuth] Supabase query error while fetching profile.', {
+      userId: user.id,
+      error: fetchError,
+    })
+    throw fetchError
+  }
   if (existing) return existing
   const { error: insertError } = await supabase.from('profiles').insert({ id: user.id, email: user.email ?? null, role: 'user' })
-  if (insertError) throw insertError
+  if (insertError) {
+    console.error('[useAuth] Supabase insert error while creating profile.', {
+      userId: user.id,
+      error: insertError,
+    })
+    throw insertError
+  }
   const { data: created, error: refetchError } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
-  if (refetchError) throw refetchError
+  if (refetchError) {
+    console.error('[useAuth] Supabase query error while re-fetching profile after insert.', {
+      userId: user.id,
+      error: refetchError,
+    })
+    throw refetchError
+  }
   return created
 }
