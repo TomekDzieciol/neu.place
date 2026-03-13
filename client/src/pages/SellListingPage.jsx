@@ -254,8 +254,9 @@ export function SellListingPage() {
               value={brandId}
               onChange={(e) => setBrandId(e.target.value)}
               required
+              disabled={!category}
             >
-              <option value="">Wybierz markę</option>
+              <option value="">{category ? 'Wybierz markę' : 'Wybierz najpierw kategorię'}</option>
               {brands.map((b) => (
                 <option key={b.id} value={b.id}>
                   {b.name}

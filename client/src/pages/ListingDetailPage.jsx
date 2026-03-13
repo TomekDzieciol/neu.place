@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { LISTING_CATEGORIES } from '../constants/categories'
+import { ListingGallery } from '../components/ListingGallery'
 
 export function ListingDetailPage() {
   const { id } = useParams()
@@ -117,26 +118,9 @@ export function ListingDetailPage() {
       </header>
 
       <section className="section">
-        {listing.main_photo_url && (
-          <div className="detail-main-photo">
-            <img
-              src={listing.main_photo_url}
-              alt={listing.title}
-              className="detail-main-photo__image"
-            />
-          </div>
-        )}
-
-        {listing.photos.length > 1 && (
-          <div className="detail-photos-strip">
-            {listing.photos.map((p) => (
-              <img
-                key={p.url}
-                src={p.url}
-                alt={listing.title}
-                className="detail-photos-strip__thumb"
-              />
-            ))}
+        {listing.photos?.length > 0 && (
+          <div className="mb-8">
+            <ListingGallery photos={listing.photos} title={listing.title} />
           </div>
         )}
 
