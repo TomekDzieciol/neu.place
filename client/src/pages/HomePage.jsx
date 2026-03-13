@@ -23,9 +23,11 @@ export function HomePage() {
         </div>
       )}
       {!supabase && (
-        <div className="alert alert--warning">
-          Brak konfiguracji Supabase. Skopiuj <code>client/.env.example</code> do <code>client/.env</code> i uzupełnij VITE_SUPABASE_URL oraz VITE_SUPABASE_ANON_KEY.
-        </div>
+        <>
+          {console.log(
+            '[HomePage] Supabase client is not initialized. Check VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in client/.env or Vercel project settings.'
+          )}
+        </>
       )}
       <header className="page-header">
         <h1>Portal ogłoszeń motoryzacyjnych</h1>

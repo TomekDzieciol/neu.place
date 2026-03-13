@@ -42,7 +42,10 @@ export function AuthPage() {
     e.preventDefault()
     setMessage({ type: '', text: '' })
     if (!supabase) {
-      setMessage({ type: 'error', text: 'Brak konfiguracji Supabase. Uzupełnij client/.env.' })
+      console.log(
+        '[AuthPage] Supabase client is not initialized. Check VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in client/.env or Vercel project settings.'
+      )
+      setMessage({ type: 'error', text: 'Tymczasowy błąd połączenia. Spróbuj ponownie za chwilę.' })
       return
     }
     setLoading(true)
