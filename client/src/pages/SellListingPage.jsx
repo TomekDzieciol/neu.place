@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useListingDictionaries } from '../hooks/useListingDictionaries'
 import { useCounties } from '../hooks/useCounties'
-import { supabase } from '../lib/supabase'
+import { supabase, supabaseUrl } from '../lib/supabase'
 import { LISTING_CATEGORIES } from '../constants/categories'
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5 MB
@@ -229,11 +229,15 @@ export function SellListingPage() {
           .getPublicUrl(path)
         const photoUrl = urlData.publicUrl
 
-        const { error: photoErr } = await supabase.from('listing_photos').insert({
-          listing_id: listingId,
-          url: photoUrl,
-          sort_order: i,
-        })
+        const { data: insertedPhoto, error: photoErr } = await supabase
+          .from('listing_photos')
+          .insert({
+            listing_id: listingId,
+            url: photoUrl,
+            sort_order: i,
+          })
+          .select('id')
+          .single()
         if (photoErr) {
           console.error('[SellListingPage] Supabase insert error while saving listing photo row.', {
             listingId,
@@ -244,6 +248,23 @@ export function SellListingPage() {
           setError(`Błąd zapisu zdjęcia: ${photoErr.message}`)
           setSubmitting(false)
           return
+        }
+        if (insertedPhoto?.id) {
+          (async () => {
+            const fnUrl = `${supabaseUrl}/functions/v1/tag-listing-photo`
+            const { data: { session } } = await supabase.auth.getSession()
+            const body = JSON.stringify({ listing_photo_id: insertedPhoto.id })
+            const headers = { 'Content-Type': 'application/json', ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}) }
+            try {
+              const r = await fetch(fnUrl, { method: 'POST', headers, body })
+              if (!r.ok) {
+                const bodyText = await r.text()
+                console.warn('[SellListingPage] AI tagowanie w tle nie powiodło się:', r.status, bodyText.slice(0, 200))
+              }
+            } catch (e) {
+              console.warn('[SellListingPage] AI tagowanie w tle nie powiodło się:', e?.message || e)
+            }
+          })()
         }
       }
 

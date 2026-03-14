@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /auth
+Disallow: /dashboard
+Disallow: /ulubione
+Disallow: /wiadomosci
+Disallow: /sprzedaj
+Disallow: /admin
+
+Sitemap: https://neu.place/sitemap.xml

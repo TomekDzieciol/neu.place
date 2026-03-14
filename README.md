@@ -18,7 +18,8 @@ Stos: **React** (Vite) + **Node.js** (Express) + **Supabase** (PostgreSQL, Auth)
 
 ## Uruchomienie
 
-1. **Supabase:** załóż projekt na [supabase.com](https://supabase.com), skopiuj URL i klucze. Wykonaj `supabase/schema.sql` w SQL Editor. Aby umożliwić wgrywanie zdjęć do ogłoszeń, wykonaj także `supabase/storage-setup.sql` (bucket `listing-photos` i polityki).
+1. **Supabase:** załóż projekt na [supabase.com](https://supabase.com), skopiuj URL i klucze. Wykonaj `supabase/schema.sql` w SQL Editor. Aby umożliwić wgrywanie zdjęć do ogłoszeń, wykonaj także `supabase/storage-setup.sql` (bucket `listing-photos` i polityki). Migracje w `supabase/migrations/` (np. `20250313130000_listing_photos_ai_tags.sql`) wykonaj w SQL Editor lub przez `supabase db push`.  
+   **Automatyczne tagowanie zdjęć (OpenAI):** w Supabase Dashboard → Project Settings → Edge Functions → Secrets ustaw `OPENAI_API_KEY`. Zdeployuj funkcję: `supabase functions deploy tag-listing-photo`. Po wgraniu zdjęć do ogłoszenia funkcja w tle uzupełnia kolumny `listing_photos.ai_tags` i `ai_caption`.
 2. **Zmienne środowiskowe:** skopiuj `client/.env.example` → `client/.env` oraz `server/.env.example` → `server/.env` i uzupełnij klucze Supabase.
 3. **Z katalogu głównego (client + server naraz):**
    ```bash

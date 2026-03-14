@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import { supabase } from '../lib/supabase'
 import { LISTING_CATEGORIES } from '../constants/categories'
 import { ListingGallery } from '../components/ListingGallery'
 import { RevealPhone } from '../components/RevealPhone'
 import { useAuth } from '../hooks/useAuth'
+
+const SITE_URL = 'https://neu.place'
 
 export function ListingDetailPage() {
   const { id } = useParams()
@@ -120,6 +123,31 @@ export function ListingDetailPage() {
   const locationText =
     [listing.region_name, listing.county_name, listing.city].filter(Boolean).join(', ') || '—'
 
+  const listingUrl = `${SITE_URL}/ogloszenia/${listing.id}`
+  const metaTitle = `${listing.title} – ${listing.price} PLN | Neu.Place`
+  const metaDescription =
+    listing.description?.slice(0, 155) ||
+    `${listing.brand_name || ''} ${listing.model_name || ''} ${listing.year || ''} – ${listing.price} PLN. ${locationText}. Ogłoszenie motoryzacyjne na Neu.Place.`.trim()
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Car',
+    name: listing.title,
+    description: listing.description || metaDescription,
+    url: listingUrl,
+    ...(listing.main_photo_url && { image: listing.main_photo_url }),
+    ...(listing.price && {
+      offers: {
+        '@type': 'Offer',
+        price: listing.price,
+        priceCurrency: 'PLN',
+      },
+    }),
+    ...(listing.year && { vehicleModelDate: listing.year }),
+    ...(listing.mileage_km != null && { mileageFromOdometer: { '@type': 'QuantitativeValue', value: listing.mileage_km, unitCode: 'KMT' } }),
+    ...(locationText !== '—' && { areaServed: { '@type': 'Place', name: locationText } }),
+  }
+
   async function handleStartConversation() {
     if (!supabase) return
     if (!user) {
@@ -186,6 +214,18 @@ export function ListingDetailPage() {
 
   return (
     <div className="layout layout--narrow">
+      <Helmet>
+        <title>{metaTitle}</title>
+        <meta name="description" content={metaDescription} />
+        <link rel="canonical" href={listingUrl} />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={listingUrl} />
+        <meta property="og:title" content={metaTitle} />
+        <meta property="og:description" content={metaDescription} />
+        {listing.main_photo_url && <meta property="og:image" content={listing.main_photo_url} />}
+        <meta property="og:locale" content="pl_PL" />
+        <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
+      </Helmet>
       <header className="page-header">
         <h1>{listing.title}</h1>
         <nav>

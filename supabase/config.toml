@@ -1,0 +1,4 @@
+# Edge Function: wyłączenie weryfikacji JWT na bramce (funkcja weryfikuje kontekst użytkownika wewnętrznie przez createClient z Authorization).
+# Bez tego wywołania z przeglądarki z tokenem użytkownika dostają 401 Invalid JWT (nowe klucze vs legacy).
+[functions.tag-listing-photo]
+verify_jwt = false
