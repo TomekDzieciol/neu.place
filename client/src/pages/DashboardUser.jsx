@@ -85,6 +85,8 @@ export function DashboardUser() {
         <nav>
           <Link to="/">Strona główna</Link>
           <Link to="/sprzedaj">Sprzedaj</Link>
+          <Link to="/ulubione">Ulubione</Link>
+          <Link to="/wiadomosci">Wiadomości</Link>
           {(profile?.role === 'admin' || profile?.role === 'superadmin') && <Link to="/admin">Panel zarządzania</Link>}
           <button type="button" className="btn-link" onClick={handleSignOut}>Wyloguj</button>
         </nav>

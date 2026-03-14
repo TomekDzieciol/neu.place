@@ -1,13 +1,15 @@
 import { Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { ListingFilters } from '../components/ListingFilters'
+import { ListingCard } from '../components/ListingCard'
 import { useListingsPreview } from '../hooks/useListingsPreview'
+import { useFavoriteIds, toggleFavorite } from '../hooks/useFavorites'
 import { supabase } from '../lib/supabase'
-import { LISTING_CATEGORIES } from '../constants/categories'
 
 export function HomePage() {
   const { user } = useAuth()
   const { listings, loading } = useListingsPreview(12)
+  const { favoriteIds, refetch: refetchFavorites } = useFavoriteIds(user?.id)
   const [searchParams] = useSearchParams()
   const showSuccess = searchParams.get('sprzedaj') === 'ok'
 
@@ -35,6 +37,7 @@ export function HomePage() {
           {user ? (
             <>
               <Link to="/sprzedaj">Sprzedaj</Link>
+              <Link to="/ulubione">Ulubione</Link>
               <Link to="/dashboard">Moje konto</Link>
               <button type="button" className="btn-link" onClick={handleSignOut}>Wyloguj</button>
             </>
@@ -73,29 +76,13 @@ export function HomePage() {
         ) : listings?.length > 0 ? (
           <div className="grid-listings">
             {listings.map((l) => (
-              <Link key={l.id} to={`/ogloszenia/${l.id}`} className="card card--listing card--clickable">
-                <div className="card__thumb">
-                  {l.photo_url && (
-                    <img
-                      src={l.photo_url}
-                      alt={l.title}
-                      className="card__thumb-image"
-                    />
-                  )}
-                </div>
-                <div className="card__body">
-                  <h4 className="card__title">{l.title}</h4>
-                  <p className="card__meta">
-                    {l.price} PLN · {l.year}
-                  </p>
-                  <p className="card__location">{[l.region_name, l.county_name, l.city].filter(Boolean).join(', ') || '—'}</p>
-                  {l.category && (
-                    <p className="card__badge">
-                      {LISTING_CATEGORIES.find((c) => c.value === l.category)?.label || 'Inna kategoria'}
-                    </p>
-                  )}
-                </div>
-              </Link>
+              <ListingCard
+                key={l.id}
+                listing={l}
+                showFavorite={!!user}
+                isFavorited={user ? favoriteIds.has(l.id) : false}
+                onFavoriteToggle={() => user && toggleFavorite(user.id, l.id).then(refetchFavorites)}
+              />
             ))}
           </div>
         ) : (

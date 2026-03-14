@@ -3,10 +3,13 @@ import { Link, useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { LISTING_CATEGORIES } from '../constants/categories'
 import { ListingGallery } from '../components/ListingGallery'
+import { RevealPhone } from '../components/RevealPhone'
+import { useAuth } from '../hooks/useAuth'
 
 export function ListingDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [listing, setListing] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -24,7 +27,7 @@ export function ListingDetailPage() {
         const { data, error: qError } = await supabase
           .from('listings')
           .select(`
-            id, title, description, price, year, mileage_km, city, category, technical_condition,
+            id, title, description, price, year, mileage_km, city, category, technical_condition, user_id,
             regions ( name ),
             counties ( name ),
             car_brands ( name ),
@@ -51,6 +54,7 @@ export function ListingDetailPage() {
             : []
           const mapped = {
             ...data,
+            owner_id: data.user_id,
             brand_name: data.car_brands?.name,
             model_name: data.car_models?.name,
             region_name: data.regions?.name,
@@ -116,6 +120,70 @@ export function ListingDetailPage() {
   const locationText =
     [listing.region_name, listing.county_name, listing.city].filter(Boolean).join(', ') || '—'
 
+  async function handleStartConversation() {
+    if (!supabase) return
+    if (!user) {
+      navigate('/auth')
+      return
+    }
+    if (!listing?.owner_id || listing.owner_id === user.id) return
+
+    const [userA, userB] =
+      user.id < listing.owner_id ? [user.id, listing.owner_id] : [listing.owner_id, user.id]
+
+    try {
+      const { data: existing, error: findError } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('listing_id', listing.id)
+        .eq('user_a', userA)
+        .eq('user_b', userB)
+        .maybeSingle()
+
+      if (findError && findError.code !== 'PGRST116') {
+        console.error('[ListingDetailPage] Supabase query error while finding conversation.', {
+          error: findError,
+          listingId: listing.id,
+        })
+      }
+
+      let conversationId = existing?.id
+
+      if (!conversationId) {
+        const previewBase = `Zapytanie dotyczące ogłoszenia: ${listing.title}`.slice(0, 200)
+        const { data: created, error: insertError } = await supabase
+          .from('conversations')
+          .insert({
+            listing_id: listing.id,
+            user_a: userA,
+            user_b: userB,
+            last_message_at: new Date().toISOString(),
+            last_message_preview: previewBase,
+          })
+          .select('id')
+          .maybeSingle()
+
+        if (insertError) {
+          console.error('[ListingDetailPage] Supabase insert error while creating conversation.', {
+            error: insertError,
+            listingId: listing.id,
+          })
+          return
+        }
+        conversationId = created?.id
+      }
+
+      if (conversationId) {
+        navigate(`/wiadomosci/${conversationId}`)
+      }
+    } catch (e) {
+      console.error('[ListingDetailPage] Unexpected error while starting conversation.', {
+        error: e,
+        listingId: listing.id,
+      })
+    }
+  }
+
   return (
     <div className="layout layout--narrow">
       <header className="page-header">
@@ -156,6 +224,18 @@ export function ListingDetailPage() {
           <p>
             <strong>Lokalizacja:</strong> {locationText}
           </p>
+          <RevealPhone listingId={listing.id} />
+          {user && listing.owner_id && listing.owner_id !== user.id && (
+            <div className="detail-actions">
+              <button
+                type="button"
+                className="btn btn--primary"
+                onClick={handleStartConversation}
+              >
+                Wyślij wiadomość
+              </button>
+            </div>
+          )}
           {categoryLabel && (
             <p>
               <strong>Kategoria:</strong> {categoryLabel}
@@ -169,6 +249,7 @@ export function ListingDetailPage() {
             <p>{listing.description}</p>
           </div>
         )}
+
       </section>
     </div>
   )

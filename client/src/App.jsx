@@ -6,6 +6,8 @@ import { AuthPage } from './pages/AuthPage'
 import { DashboardUser } from './pages/DashboardUser'
 import { DashboardAdmin } from './pages/DashboardAdmin'
 import { SellListingPage } from './pages/SellListingPage'
+import { FavoritesPage } from './pages/FavoritesPage'
+import { MessagesPage } from './pages/MessagesPage'
 import { UserList } from './components/UserList'
 import { AdminListingsList } from './components/AdminListingsList'
 import { BrandsManager } from './components/BrandsManager'
@@ -29,7 +31,10 @@ export default function App() {
         <Route path="/ogloszenia" element={<ListingsPage />} />
         <Route path="/ogloszenia/:id" element={<ListingDetailPage />} />
         <Route path="/sprzedaj" element={<ProtectedRoute><SellListingPage /></ProtectedRoute>} />
+        <Route path="/ulubione" element={<ProtectedRoute><FavoritesPage /></ProtectedRoute>} />
         <Route path="/dashboard" element={<ProtectedRoute><DashboardUser /></ProtectedRoute>} />
+        <Route path="/wiadomosci" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
+        <Route path="/wiadomosci/:conversationId" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute requireAdmin><DashboardAdmin /></ProtectedRoute>}>
           <Route index element={<Navigate to="uzytkownicy" replace />} />
           <Route path="uzytkownicy" element={<UserList />} />

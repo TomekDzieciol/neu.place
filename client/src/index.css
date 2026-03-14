@@ -48,6 +48,109 @@ body {
   max-width: 900px;
 }
 
+/* Sell form – pola w stylu przycisku "Wystaw ogłoszenie" (gradient cyan → violet) */
+.field-input {
+  width: 100%;
+  height: 2.75rem;
+  padding: 0 1rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: white;
+  background: linear-gradient(135deg, var(--color-cyan) 0%, var(--color-violet) 100%);
+  border: none;
+  border-radius: 0.75rem;
+  outline: none;
+  box-shadow: 0 4px 20px rgba(0, 217, 255, 0.25);
+  transition: box-shadow 0.2s, opacity 0.2s;
+}
+
+/* Na stronie /sprzedaj: pola o szerokości dopasowanej do treści (np. "Wybierz kolor") */
+.sell-form-card .field-input:not(.field-input--full) {
+  width: auto;
+  min-width: 14rem;
+  max-width: 100%;
+}
+.field-input::placeholder {
+  color: rgba(255, 255, 255, 0.75);
+}
+.field-input:focus {
+  box-shadow: 0 6px 28px rgba(0, 217, 255, 0.35), 0 2px 12px rgba(123, 44, 191, 0.2);
+}
+/* Select: opcje rozwijane – białe tło */
+.field-input option {
+  background: white;
+  color: #1e293b;
+}
+.field-input--disabled:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+.field-input--textarea {
+  height: auto;
+  min-height: 8rem;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+  resize: vertical;
+}
+
+/* Sell form card – spójność z główną (cyan/violet) */
+.sell-form-card {
+  box-shadow: var(--shadow-card);
+  border: 2px solid rgba(0, 217, 255, 0.15);
+}
+
+.sell-form-submit {
+  padding: 1rem 2.5rem;
+  border-radius: 0.75rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: white;
+  background: linear-gradient(135deg, var(--color-cyan) 0%, var(--color-violet) 100%);
+  border: none;
+  box-shadow: 0 4px 20px rgba(0, 217, 255, 0.25);
+  transition: box-shadow 0.2s, opacity 0.2s;
+}
+
+.sell-form-submit:hover:not(:disabled) {
+  box-shadow: 0 8px 32px rgba(0, 217, 255, 0.35), 0 4px 16px rgba(123, 44, 191, 0.2);
+}
+
+.sell-form-submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Segmented control – ten sam gradient co przycisk */
+.sell-form-segmented {
+  background: linear-gradient(135deg, var(--color-cyan) 0%, var(--color-violet) 100%);
+  box-shadow: 0 4px 20px rgba(0, 217, 255, 0.25);
+}
+.sell-form-segmented-active {
+  background: white;
+  color: var(--color-violet);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Dropzone zdjęć – ten sam wygląd co przycisk */
+.sell-form-dropzone {
+  background: linear-gradient(135deg, var(--color-cyan) 0%, var(--color-violet) 100%);
+  border: none;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 217, 255, 0.25);
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.sell-form-dropzone:hover,
+.sell-form-dropzone--active {
+  box-shadow: 0 6px 28px rgba(0, 217, 255, 0.35), 0 2px 12px rgba(123, 44, 191, 0.2);
+}
+
 /* Header */
 .page-header {
   display: flex;
@@ -189,12 +292,63 @@ a.btn--secondary {
 }
 
 .card--listing .card__thumb {
+  position: relative;
   height: 180px;
   background: linear-gradient(135deg, var(--color-cyan) 0%, var(--color-magenta) 100%);
   opacity: 0.9;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.favorite-heart {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s, background 0.15s, box-shadow 0.15s;
+  z-index: 1;
+  appearance: none;
+  -webkit-appearance: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.favorite-heart:hover {
+  transform: scale(1.1);
+  background: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.favorite-heart:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.favorite-heart__icon {
+  width: 22px;
+  height: 22px;
+  display: block;
+  pointer-events: none;
+}
+
+.favorite-heart__icon--outline {
+  color: var(--color-magenta);
+  stroke: currentColor;
+  filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.8));
+}
+
+.favorite-heart__icon--filled {
+  color: var(--color-magenta);
 }
 
 .card__thumb-image {
@@ -608,4 +762,327 @@ a.btn--secondary {
 
 .page-message .btn {
   margin-top: 8px;
+}
+
+/* ========== Wiadomości (styl jak przycisk Wyślij: gradient magenta→violet, zaokrąglenia, cień) ========== */
+.layout--wide {
+  max-width: 1100px;
+}
+
+.messages-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 24px;
+  min-height: 420px;
+}
+@media (max-width: 768px) {
+  .messages-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.messages-sidebar {
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 20px rgba(255, 0, 110, 0.12), 0 0 0 2px rgba(255, 0, 110, 0.08);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.messages-sidebar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid rgba(255, 0, 110, 0.15);
+}
+
+.messages-sidebar__header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+}
+
+.messages-sidebar__header .btn-sm,
+.messages-sidebar__header .messages-btn-refresh {
+  padding: 10px 18px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, var(--color-magenta), var(--color-violet));
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 4px 20px rgba(255, 0, 110, 0.4);
+  transition: transform 0.15s, box-shadow 0.2s;
+}
+
+.messages-sidebar__header .btn-sm:hover:not(:disabled),
+.messages-sidebar__header .messages-btn-refresh:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(255, 0, 110, 0.5);
+}
+
+.messages-sidebar__header .btn-sm:disabled,
+.messages-sidebar__header .messages-btn-refresh:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.messages-conversations {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.messages-conversations__item {
+  margin: 0;
+  padding: 0;
+}
+
+.messages-conversations__item button {
+  width: 100%;
+  text-align: left;
+  padding: 14px 16px;
+  border: none;
+  border-radius: 12px;
+  background: rgba(255, 0, 110, 0.06);
+  border: 2px solid rgba(255, 0, 110, 0.12);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.messages-conversations__item button:hover {
+  background: rgba(255, 0, 110, 0.12);
+  border-color: rgba(255, 0, 110, 0.25);
+  box-shadow: 0 4px 16px rgba(255, 0, 110, 0.15);
+}
+
+.messages-conversations__item--active button {
+  background: linear-gradient(135deg, var(--color-magenta), var(--color-violet));
+  border-color: transparent;
+  color: white;
+  box-shadow: 0 4px 20px rgba(255, 0, 110, 0.4);
+}
+
+.messages-conversations__item--active .messages-conversations__title,
+.messages-conversations__item--active .messages-conversations__preview,
+.messages-conversations__item--active .messages-conversations__time {
+  color: white;
+}
+
+.messages-conversations__item--active .messages-conversations__preview {
+  opacity: 0.95;
+}
+
+.messages-conversations__title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--color-text);
+  margin-bottom: 4px;
+}
+
+.messages-conversations__preview {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.messages-conversations__time {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-top: 6px;
+}
+
+.messages-main {
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 20px rgba(255, 0, 110, 0.12), 0 0 0 2px rgba(255, 0, 110, 0.08);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  min-height: 420px;
+}
+
+.messages-thread {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 20px;
+  min-height: 200px;
+}
+
+.messages-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.messages-list__item {
+  display: flex;
+  margin: 0;
+  padding: 0;
+}
+
+.messages-list__item--own {
+  justify-content: flex-end;
+}
+
+.messages-list__bubble {
+  max-width: 85%;
+  padding: 14px 18px;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+.messages-list__item:not(.messages-list__item--own) .messages-list__bubble {
+  background: var(--color-surface);
+  border: 2px solid rgba(255, 0, 110, 0.15);
+  box-shadow: 0 4px 16px rgba(255, 0, 110, 0.08);
+}
+
+.messages-list__item--own .messages-list__bubble {
+  background: linear-gradient(135deg, var(--color-magenta), var(--color-violet));
+  border: none;
+  color: white;
+  box-shadow: 0 4px 20px rgba(255, 0, 110, 0.4);
+}
+
+.messages-list__content {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.messages-list__item--own .messages-list__content {
+  color: white;
+}
+
+.messages-list__meta {
+  margin-top: 8px;
+  font-size: 0.75rem;
+  opacity: 0.85;
+}
+
+.messages-list__item:not(.messages-list__item--own) .messages-list__meta {
+  color: var(--color-text-muted);
+}
+
+.messages-form {
+  border-top: 2px solid rgba(255, 0, 110, 0.12);
+  padding-top: 20px;
+}
+
+.messages-form textarea {
+  width: 100%;
+  min-height: 88px;
+  padding: 14px 18px;
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 2px solid rgba(255, 0, 110, 0.2);
+  border-radius: 12px;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  margin-bottom: 12px;
+}
+
+.messages-form textarea::placeholder {
+  color: var(--color-text-muted);
+}
+
+.messages-form textarea:focus {
+  border-color: var(--color-magenta);
+  box-shadow: 0 4px 20px rgba(255, 0, 110, 0.15);
+}
+
+.messages-form__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.messages-form__actions .btn--primary {
+  padding: 12px 28px;
+  font-weight: 700;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(255, 0, 110, 0.4);
+}
+
+.messages-form__actions .btn--primary:hover:not(:disabled) {
+  box-shadow: 0 8px 28px rgba(255, 0, 110, 0.5);
+}
+
+/* empty state na stronie wiadomości */
+.messages-main .empty-state {
+  border: 2px dashed rgba(255, 0, 110, 0.25);
+  background: rgba(255, 0, 110, 0.04);
+  color: var(--color-text-muted);
+}
+
+/* Numer telefonu w szczegółach ogłoszenia (kliknij, aby odsłonić) */
+.detail-phone {
+  margin: 0 0 0.5rem;
+}
+
+.detail-phone__label {
+  font-weight: 700;
+}
+
+.detail-phone__reveal-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: var(--color-cyan);
+  background: rgba(0, 217, 255, 0.12);
+  border: 2px solid rgba(0, 217, 255, 0.4);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.detail-phone__reveal-btn:hover {
+  background: rgba(0, 217, 255, 0.2);
+  border-color: var(--color-cyan);
+  box-shadow: 0 4px 16px rgba(0, 217, 255, 0.2);
+}
+
+.detail-phone__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-magenta);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.detail-phone__link:hover {
+  text-decoration: underline;
+}
+
+.detail-phone--loading .detail-phone__value,
+.detail-phone--error .detail-phone__value {
+  color: var(--color-text-muted);
 }
