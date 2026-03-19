@@ -72,7 +72,10 @@ export function HomePage() {
 
       <section className="search-box section">
         <h3 className="section__title">Wyszukiwarka</h3>
-        <ListingFilters redirectTo="/ogloszenia" />
+        <ListingFilters redirectTo="/szukaj" />
+        <p className="search-box__more">
+          <Link to="/szukaj">Więcej filtrów (kategoria, marka, cena, rok…)</Link>
+        </p>
       </section>
 
       <section className="section">

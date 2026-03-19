@@ -27,6 +27,7 @@ export function SellListingPage() {
   const [countyId, setCountyId] = useState('')
   const [city, setCity] = useState('')
   const [technicalCondition, setTechnicalCondition] = useState('Nieuszkodzony')
+  const [gearbox, setGearbox] = useState('')
   const [files, setFiles] = useState([])
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -121,6 +122,10 @@ export function SellListingPage() {
       setError('Wybierz stan techniczny.')
       return
     }
+    if (!gearbox || !['Manualna', 'Automatyczna'].includes(gearbox)) {
+      setError('Wybierz skrzynię biegów.')
+      return
+    }
     const priceNum = Number(price)
     if (Number.isNaN(priceNum) || priceNum < 0) {
       setError('Podaj prawidłową cenę (PLN).')
@@ -177,6 +182,7 @@ export function SellListingPage() {
           county_id: countyId === '' ? null : Number(countyId),
           city: city.trim() || null,
           technical_condition: technicalCondition,
+          gearbox,
           status: 'active',
         })
         .select('id')
@@ -436,6 +442,20 @@ export function SellListingPage() {
                   </button>
                 ))}
               </div>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-bold text-slate-700 mb-1 ml-1">Skrzynia biegów *</label>
+              <select
+                value={gearbox}
+                onChange={(e) => setGearbox(e.target.value)}
+                required
+                className="field-input"
+              >
+                <option value="">Wybierz skrzynię biegów</option>
+                <option value="Manualna">Manualna</option>
+                <option value="Automatyczna">Automatyczna</option>
+              </select>
             </div>
 
             <div className="md:col-span-6">

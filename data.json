@@ -1,0 +1,15 @@
+curl.exe -X POST "https://tuqnjmjguogwpdooidpm.functions.supabase.co/bulk-import-listings" `
+  -H "Content-Type: application/json" `
+  -H "Authorization: Bearer eyJhbGciOiJFUzI1NiIsImtpZCI6Ijk2NzJjZTQ1LTc5OWYtNDcxZi04Y2NkLWQwMDk4MWIyN2E1NSIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL3R1cW5qbWpndW9nd3Bkb29pZHBtLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiI0N2ZlZTFjYi1iMWIyLTRhM2YtYWE1Yi1kMDQwZjM0NWM1MDciLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzczNzQyMDAyLCJpYXQiOjE3NzM3Mzg0MDIsImVtYWlsIjoidDQxOTc4OTE4QGdtYWlsLmNvbSIsInBob25lIjoiIiwiYXBwX21ldGFkYXRhIjp7InByb3ZpZGVyIjoiZW1haWwiLCJwcm92aWRlcnMiOlsiZW1haWwiXX0sInVzZXJfbWV0YWRhdGEiOnsiZW1haWwiOiJ0NDE5Nzg5MThAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsInBob25lX3ZlcmlmaWVkIjpmYWxzZSwic3ViIjoiNDdmZWUxY2ItYjFiMi00YTNmLWFhNWItZDA0MGYzNDVjNTA3In0sInJvbGUiOiJhdXRoZW50aWNhdGVkIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NzM3Mzg0MDJ9XSwic2Vzc2lvbl9pZCI6IjRlNzg5NTFhLTU3ZGYtNGUxNC1iYzNlLTUxODRiMGRmZGQ5NSIsImlzX2Fub255bW91cyI6ZmFsc2V9.pYR226KuhUMSDtx2k7zDJdR_y9ATjymVD0hzIeukpSnI6fxkH1msR2TmYSM25Qq8iV1kOL6-VGPtIjhSRKPRgQ"
+  -d '{
+    "listings": [
+      {
+        "brand_id": 1,
+        "model_id": 1,
+        "title": "Test z PowerShell",
+        "price": 50000,
+        "year": 2022,
+        "category": "cars"
+      }
+    ]
+  }'

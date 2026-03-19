@@ -8,6 +8,7 @@ import { DashboardAdmin } from './pages/DashboardAdmin'
 import { SellListingPage } from './pages/SellListingPage'
 import { FavoritesPage } from './pages/FavoritesPage'
 import { MessagesPage } from './pages/MessagesPage'
+import { SearchPage } from './pages/SearchPage'
 import { UserList } from './components/UserList'
 import { AdminListingsList } from './components/AdminListingsList'
 import { BrandsManager } from './components/BrandsManager'
@@ -30,6 +31,7 @@ export default function App() {
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/ogloszenia" element={<ListingsPage />} />
         <Route path="/ogloszenia/:id" element={<ListingDetailPage />} />
+        <Route path="/szukaj" element={<SearchPage />} />
         <Route path="/sprzedaj" element={<ProtectedRoute><SellListingPage /></ProtectedRoute>} />
         <Route path="/ulubione" element={<ProtectedRoute><FavoritesPage /></ProtectedRoute>} />
         <Route path="/dashboard" element={<ProtectedRoute><DashboardUser /></ProtectedRoute>} />

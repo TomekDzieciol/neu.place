@@ -1,35 +1,53 @@
 import { Link, useSearchParams } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { useAuth } from '../hooks/useAuth'
-import { ListingFilters } from '../components/ListingFilters'
+import { ListingFiltersExtended } from '../components/ListingFiltersExtended'
 import { ListingCard } from '../components/ListingCard'
 import { useListingsSearch } from '../hooks/useListingsSearch'
 import { useFavoriteIds, toggleFavorite } from '../hooks/useFavorites'
+import { supabase } from '../lib/supabase'
 
-export function ListingsPage() {
+export function SearchPage() {
   const { user } = useAuth()
   const [searchParams] = useSearchParams()
   const { listings, loading } = useListingsSearch(Object.fromEntries(searchParams))
   const { favoriteIds, refetch: refetchFavorites } = useFavoriteIds(user?.id)
 
+  async function handleSignOut() {
+    if (supabase) await supabase.auth.signOut()
+  }
+
   return (
     <div className="layout">
       <Helmet>
-        <title>Ogłoszenia motoryzacyjne – samochody używane i nowe | Neu.Place</title>
-        <meta name="description" content="Przeglądaj ogłoszenia motoryzacyjne. Samochody używane i nowe z całej Polski. Filtruj po marce, cenie, roku i lokalizacji." />
-        <link rel="canonical" href="https://neu.place/ogloszenia" />
+        <title>Szukaj – zaawansowane filtry | Neu.Place</title>
+        <meta name="description" content="Zaawansowane wyszukiwanie ogłoszeń motoryzacyjnych. Filtruj po kategorii, marce, cenie, roku, paliwie, województwie i powiecie." />
+        <link rel="canonical" href="https://neu.place/szukaj" />
       </Helmet>
       <header className="page-header">
-        <h1>Ogłoszenia</h1>
-        <Link to="/">Strona główna</Link>
+        <h1>Szukaj</h1>
+        <nav>
+          <Link to="/">Strona główna</Link>
+          <Link to="/ogloszenia">Ogłoszenia</Link>
+          {user ? (
+            <>
+              <Link to="/ulubione">Ulubione</Link>
+              <Link to="/dashboard">Moje konto</Link>
+              <Link to="/sprzedaj">Sprzedaj</Link>
+              <button type="button" className="btn-link" onClick={handleSignOut}>Wyloguj</button>
+            </>
+          ) : (
+            <>
+              <Link to="/auth">Zaloguj</Link>
+              <Link to="/auth?rejestracja=1">Zarejestruj się</Link>
+            </>
+          )}
+        </nav>
       </header>
 
       <section className="search-box section">
-        <h3 className="section__title">Filtry</h3>
-        <ListingFilters redirectTo="/ogloszenia" />
-        <p className="search-box__more">
-          <Link to="/szukaj">Więcej filtrów (zaawansowane wyszukiwanie)</Link>
-        </p>
+        <h3 className="section__title">Filtry zaawansowane</h3>
+        <ListingFiltersExtended redirectTo="/szukaj" />
       </section>
 
       {loading ? (

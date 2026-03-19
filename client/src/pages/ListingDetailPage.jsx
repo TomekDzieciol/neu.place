@@ -30,7 +30,7 @@ export function ListingDetailPage() {
         const { data, error: qError } = await supabase
           .from('listings')
           .select(`
-            id, title, description, price, year, mileage_km, city, category, technical_condition, user_id,
+            id, title, description, price, year, mileage_km, city, category, technical_condition, gearbox, user_id,
             regions ( name ),
             counties ( name ),
             car_brands ( name ),
@@ -259,6 +259,11 @@ export function ListingDetailPage() {
           {listing.fuel_name && (
             <p>
               <strong>Paliwo:</strong> {listing.fuel_name}
+            </p>
+          )}
+          {listing.gearbox && (
+            <p>
+              <strong>Skrzynia biegów:</strong> {listing.gearbox}
             </p>
           )}
           <p>

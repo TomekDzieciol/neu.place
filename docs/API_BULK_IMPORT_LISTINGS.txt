@@ -1,0 +1,204 @@
+================================================================================
+  API – Masowy import ogłoszeń (Bulk Import Listings)
+  Dokumentacja techniczna
+================================================================================
+  Projekt: neu.place
+  Endpoint: Supabase Edge Function
+  Wersja: 1.0
+================================================================================
+
+1. OPIS
+--------
+Endpoint umożliwia import wielu ogłoszeń w jednym żądaniu HTTP. Wszystkie
+ogłoszenia są przypisywane do użytkownika z JWT (`user.id`) albo, w przypadku roli
+`service_role`, do stałego konta admina:
+`06b66064-715b-4445-906a-2406f97186d0`.
+Dostęp mają użytkownicy uwierzytelnieni (Bearer token) oraz klucz `service_role`.
+
+2. ADRES ENDPOINTU
+------------------
+  POST  {SUPABASE_URL}/functions/v1/bulk-import-listings
+
+  Przykład:
+  https://xxxxxxxx.supabase.co/functions/v1/bulk-import-listings
+
+3. AUTORYZACJA
+--------------
+  Nagłówek:
+    Authorization: Bearer <access_token>
+
+  Token (JWT) uzyskuje się przez Supabase Auth (np. logowanie w aplikacji).
+Gdy rola w JWT to `service_role`, do przypisania ogłoszeń używany jest stały UUID
+admina: `06b66064-715b-4445-906a-2406f97186d0`.
+Brak nagłówka lub nieprawidłowy token → 401 Unauthorized.
+
+4. FORMAT ŻĄDANIA
+-----------------
+  Metoda:  POST
+  Nagłówki:
+    Content-Type: application/json
+    Authorization: Bearer <access_token>
+
+  Body (JSON):
+    {
+      "listings": [
+        {
+          "brand_id": number,        // wymagane, ID marki z car_brands
+          "model_id": number,        // wymagane, ID modelu z car_models
+          "title": string,           // wymagane, tytuł ogłoszenia
+          "description": string,     // opcjonalne
+          "price": number,           // wymagane, cena w PLN (>= 0)
+          "year": number,            // wymagane, rok produkcji (1900–(rok+1))
+          "mileage_km": number,      // opcjonalne, przebieg w km (>= 0)
+          "region_id": number,       // opcjonalne, województwo (regions)
+          "county_id": number,      // opcjonalne, powiat (counties)
+          "city": string,            // opcjonalne
+          "category": string,        // opcjonalne, domyślnie "cars"
+          "fuel_id": number,         // opcjonalne (fuels)
+          "body_type_id": number,    // opcjonalne (body_types)
+          "color_id": number,        // opcjonalne (colors)
+          "engine_capacity_cc": number, // opcjonalne, pojemność w cm³ (> 0)
+          "technical_condition": string, // opcjonalne: "Nieuszkodzony" | "Uszkodzony"
+          "gearbox": string,         // opcjonalne: "Manualna" | "Automatyczna"
+          "status": string,          // opcjonalne: "active" | "hidden" | "closed"
+          "photos": string[]         // opcjonalne, lista URL-i zdjęć
+        }
+      ]
+    }
+
+  Limit: maksymalnie 100 ogłoszeń w jednym wywołaniu (listings.length <= 100).
+
+5. WARTOŚCI DOZWOLONE
+---------------------
+  category:
+    cars, construction, motorcycles_scooters, trailers, vans, trucks, other
+
+  technical_condition:
+    Nieuszkodzony, Uszkodzony
+
+  gearbox:
+    Manualna, Automatyczna
+
+  status:
+    active, hidden, closed
+
+  Słowniki (ID muszą istnieć w bazie):
+    brand_id → car_brands.id (spójne z category)
+    model_id → car_models.id (model musi należeć do danej marki)
+    region_id → regions.id
+    county_id → counties.id (powiat musi być w danym województwie)
+    fuel_id → fuels.id
+    body_type_id → body_types.id
+    color_id → colors.id
+
+6. FORMAT ODPOWIEDZI
+--------------------
+  Sukces (200 OK):
+    {
+      "ok": true,
+      "imported": number,
+      "listing_ids": [ "uuid", "uuid", ... ],
+      "errors": undefined
+    }
+
+  Częściowy sukces (np. błąd przy zdjęciach, ogłoszenia zapisane):
+    {
+      "ok": false,
+      "imported": number,
+      "listing_ids": [ "uuid", ... ],
+      "errors": [ "opis błędu", ... ]
+    }
+
+  Błąd walidacji (400 Bad Request):
+    {
+      "error": "Błędy walidacji",
+      "details": [ "[0] title wymagane", "[1] price wymagane (liczba >= 0)", ... ]
+    }
+
+  Błąd autoryzacji (401 Unauthorized):
+    {
+      "error": "Wymagana autoryzacja (Bearer JWT)"
+    }
+    lub
+    {
+      "error": "Nieprawidłowy lub wygasły token"
+    }
+
+  Błąd wewnętrzny (500 Internal Server Error):
+    {
+      "error": "Błąd wewnętrzny",
+      "details": "szczegóły"
+    }
+
+7. PRZYKŁADY
+------------
+  7.1. Minimalne ogłoszenie (tylko pola wymagane)
+      {
+        "listings": [
+          {
+            "brand_id": 1,
+            "model_id": 10,
+            "title": "BMW 320d 2015",
+            "price": 85000,
+            "year": 2015
+          }
+        ]
+      }
+
+  7.2. Pełne ogłoszenie ze zdjęciami
+      {
+        "listings": [
+          {
+            "brand_id": 1,
+            "model_id": 10,
+            "title": "BMW 320d, stan bardzo dobry",
+            "description": "Serwis ASO, jeden właściciel.",
+            "price": 85000,
+            "year": 2015,
+            "mileage_km": 120000,
+            "region_id": 7,
+            "county_id": 350,
+            "city": "Warszawa",
+            "category": "cars",
+            "fuel_id": 2,
+            "body_type_id": 1,
+            "color_id": 3,
+            "engine_capacity_cc": 1995,
+            "technical_condition": "Nieuszkodzony",
+            "gearbox": "Manualna",
+            "status": "active",
+            "photos": [
+              "https://example.com/photo1.jpg",
+              "https://example.com/photo2.jpg"
+            ]
+          }
+        ]
+      }
+
+  7.3. Wywołanie z cURL
+      curl -X POST "https://xxxxxxxx.supabase.co/functions/v1/bulk-import-listings" \
+        -H "Content-Type: application/json" \
+        -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+        -d '{"listings":[{"brand_id":1,"model_id":10,"title":"Test","price":10000,"year":2020}]}'
+
+8. ZACHOWANIE I OGRANICZENIA
+----------------------------
+  - Ogłoszenia są wstawiane partiami (batch po 50). Błąd w jednej partii
+    nie cofa już zapisanych wcześniejszych ogłoszeń.
+  - Zdjęcia (photos) są zapisywane w tabeli listing_photos; URL-e muszą
+    być publicznie dostępne (np. po wcześniejszym wgraniu do storage).
+  - RLS (Row Level Security) obowiązuje: user_id ustawiane jest na `user.id`
+    (zwykły token) albo na stały UUID admina przy `service_role`.
+  - Duże żądania (blisko 100 ogłoszeń) mogą trwać kilka sekund.
+
+9. DEPLOYMENT
+-------------
+  Edge Function wdrażana razem z projektem Supabase:
+    supabase functions deploy bulk-import-listings
+
+  Zmienne środowiskowe (ustawiane przez Supabase):
+    SUPABASE_URL, SUPABASE_ANON_KEY.
+
+================================================================================
+  Koniec dokumentacji
+================================================================================
